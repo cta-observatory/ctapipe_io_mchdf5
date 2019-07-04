@@ -35,7 +35,8 @@ def createDL0TableTel(hfile, telNode, nbGain, nbPixel, nbSlice, chunkshape=1):
 	hfile.create_table(telNode, 'waveform', description_waveform, "Table of waveform of the pixel with waveform", chunkshape=chunkshape)
 	
 	columns_dict_signal  = {
-				"signal": tables.Float32Col(shape=(nbPixel)),
+				#"signal": tables.Float32Col(shape=(nbPixel)),
+				"signal": tables.Int16Col(shape=(nbPixel)),
 				"waveformoffset": tables.UInt64Col(shape=())
 			 }
 	description_signal = type('description columns_dict_signal', (tables.IsDescription,), columns_dict_signal)
