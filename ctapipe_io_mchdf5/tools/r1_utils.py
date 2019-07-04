@@ -7,8 +7,10 @@
 import numbers
 import tables
 import numpy as np
-from .get_telescope_info import *
-
+try:
+	from .get_telescope_info import *
+except:
+	pass
 
 class TriggerInfo(tables.IsDescription):
 	'''
