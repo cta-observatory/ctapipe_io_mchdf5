@@ -223,7 +223,7 @@ def appendEventTelescopeData(hfile, event):
 		event : current event
 	'''
 	tabTelWithData = event.r0.tels_with_data
-	dicoTel = event.r0.tel
+	dicoTel = event.dl0.tel
 	for telId in tabTelWithData:
 		waveform = dicoTel[telId].waveform
 		telNode = hfile.get_node("/r1", 'Tel_' + str(telId))
