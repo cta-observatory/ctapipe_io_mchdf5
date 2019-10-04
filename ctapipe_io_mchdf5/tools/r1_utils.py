@@ -38,13 +38,13 @@ def createWaveformTel(hfile, telNode, nbGain, image_shape, chunkshape=1):
 		image_shape : shape of the camera images (number of slices, number of pixels)
 		chunkshape : shape of the chunk to be used to store the data
 	'''
-	#columns_dict_waveform  = {"waveformHi": tables.UInt16Col(shape=image_shape)}
+	#columns_dict_waveform  = {"waveformHi": tables.UInt16Col(shape=image_shape)}        # Commented by E. Garcia
 	columns_dict_waveform = {"waveformHi": tables.Int16Col(shape=image_shape)}
 	description_waveform = type('description columns_dict_waveform', (tables.IsDescription,), columns_dict_waveform)
 	hfile.create_table(telNode, 'waveformHi', description_waveform, "Table of waveform of the high gain signal", chunkshape=chunkshape)
 	
 	if nbGain > 1:
-		#columns_dict_waveformLo  = {"waveformLo": tables.UInt16Col(shape=image_shape)}
+		#columns_dict_waveformLo  = {"waveformLo": tables.UInt16Col(shape=image_shape)}        # Commented by E. Garcia
 		columns_dict_waveformLo = {"waveformLo": tables.Int16Col(shape=image_shape)}
 		description_waveformLo = type('description columns_dict_waveformLo', (tables.IsDescription,), columns_dict_waveformLo)
 		hfile.create_table(telNode, 'waveformLo', description_waveformLo, "Table of waveform of the low gain signal", chunkshape=chunkshape)
@@ -201,7 +201,7 @@ def appendWaveformInTelescope(telNode, waveform, photo_electron_image, eventId, 
 	tabtrigger.append()
 	
 	tabWaveformHi = telNode.waveformHi.row
-	tabWaveformHi['waveformHi'] = waveform[0].swapaxes(0, 1)*100
+	tabWaveformHi['waveformHi'] = waveform[0].swapaxes(0, 1)*100        # Commented by E. Garcia
 	tabWaveformHi.append()
 	
 	# if waveform.shape[0] > 1:
@@ -225,7 +225,7 @@ def appendEventTelescopeData(hfile, event):
 		event : current event
 	'''
 	tabTelWithData = event.r0.tels_with_data
-	dicoTel = event.dl0.tel
+	dicoTel = event.dl0.tel                 # Modified by E. Garcia
 	for telId in tabTelWithData:
 		waveform = dicoTel[telId].waveform
 		telNode = hfile.get_node("/r1", 'Tel_' + str(telId))
