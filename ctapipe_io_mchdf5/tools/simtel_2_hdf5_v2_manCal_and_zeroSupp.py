@@ -56,11 +56,10 @@ def apply_manual_calibration(event, cam_config):  # tel_id, cam_config):
     # if this is should be applied here !
     for tel_id in event.r0.tels_with_data:
         # If triggered event
-        if tel_id != 0:
-            print(" ! TEL_ID", tel_id)
+        #if tel_id != 0:
+        #    print(" ! TEL_ID", tel_id)
         if event.r0.tel[tel_id].trigger_type != 32:
             r1_dl1_calibrator(event)
-            #rint(", It has passed through here too", tel_id)
 
     #print(" Manual calibration correctly passed")
 
@@ -82,7 +81,9 @@ def apply_zero_suppression(event):
 
     # Get the mask from the integrated waveform - found in dl1 container and previous filled by the LST calibration -
     # and apply the mask to each slide of dl0, where later the code is going to look to create the HDF5 output.
-    tailcuts_data_volume_reducer_and_application_to_waveform(camera, image_dl1, waveform_dl0)
+    num_pix = tailcuts_data_volume_reducer_and_application_to_waveform(camera, image_dl1, waveform_dl0)
+
+    return num_pix
 
 
     #print(" ok apply zero suppresion")
@@ -169,6 +170,9 @@ def tailcuts_data_volume_reducer_and_application_to_waveform(
 
         #return np.ma.masked_array(waveforms, mask=reduced_waveforms_mask)
 
+        if np.sum(reduced_waveforms_mask) > 1755:
+            return np.sum(reduced_waveforms_mask)
+
         # Apply mask to dl0
         for i in range(waveforms.shape[1]):
             waveforms[:, i][~reduced_waveforms_mask] = 0
@@ -176,6 +180,8 @@ def tailcuts_data_volume_reducer_and_application_to_waveform(
             # for j in range(len(waveforms.shape[0])):
             #     if not mask[j]:
             #         waveforms[i, j] = waveforms[j, :].sum()
+
+        return np.sum(reduced_waveforms_mask)
 
 
 
@@ -201,12 +207,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--input', help="simtel r1 input file",
                         required=False,
-                        default='/Users/garciaenrique/CTA/data/data_notebooks/LST-1.1.Run00442.0000.fits.fz'
+                        default='/Users/garciaenrique/CTA/data/data_notebooks/LST-1.1.Run00251.0000.fits.fz'
                         # default=get_dataset_path('gamma_test_large.simtel.gz')
                         )
     parser.add_argument('-o', '--output', help="hdf5 r1 output file",
                         required=False,
-                        default='/Users/garciaenrique/CTA/output_mchdf5/dl0_442_Branch_manCal.h5')
+                        default='/Users/garciaenrique/CTA/output_mchdf5/dl0_251_manCal_DEBUG.h5')
     parser.add_argument('-m', '--max_event', help="maximum event to reconstuct",
                         required=False, type=int)
     parser.add_argument('-cl', '--compression_level', help="Compression level for the HDF5 file [0-9].",
@@ -251,6 +257,8 @@ def main():
     else:
         max_event = nbEvent
     print("\n")
+
+    #source.allowed_tels = {1, 2 }
     for event in source:
 
         # calib(event)
@@ -258,7 +266,9 @@ def main():
         apply_manual_calibration(event, camera_config)
 
         #print(event.dl1.tel[0].image.shape)
-        apply_zero_suppression(event)
+        num_selet_pix = apply_zero_suppression(event)
+        if num_selet_pix > 1755:
+            continue
 
         if isSimulationMode:
             appendCorsikaEvent(tableMcCorsikaEvent, event)
@@ -274,10 +284,13 @@ def main():
     flushR1Tables(hfile)
     hfile.close()
     print('\nDone')
+
+    print("")
     end = time.time()
     print((end-start)/60., " min")
 
-    print(" PHOTO ELECTRON UNIT IN (p.e * 100) !!!!!, so there are centi-p.e !!! ")
+    print("")
+    print("     PHOTO ELECTRON UNIT IN CENT - p.e  !!!!!, i.e. p.e / 100 !!! ")
 
 
 if __name__ == '__main__':
