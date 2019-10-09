@@ -128,6 +128,12 @@ def createCameraTable(hfile, telId, telInfo):
 	
 	pix_area = np.float32(0.0)
 	hfile.create_array(camTelGroup, 'pix_area', pix_area, "Area of the pixels in meters square")
+	
+	cameraRotation = np.float32(telInfo[TEL_INFOR_CAMERA_ROTATION])
+	hfile.create_array(camTelGroup, 'cam_rotation', cameraRotation, "Rotation of the camera")
+	
+	pixRotation = np.float32(telInfo[TEL_INFOR_PIX_ROTATION])
+	hfile.create_array(camTelGroup, 'pix_rotation', pixRotation, "Rotation of the pixels")
 
 
 def createInstrumentDataset(hfile, telInfo_from_evt):

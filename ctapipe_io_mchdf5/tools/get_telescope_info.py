@@ -30,6 +30,8 @@ TELINFO_MIRRORAREA = 13
 TELINFO_NBGAIN = 14
 TELINFO_NBPIXEL = 15
 TELINFO_NBEVENT = 16
+TEL_INFOR_CAMERA_ROTATION = 17
+TEL_INFOR_PIX_ROTATION = 18
 
 try:
 	def getTelescopeInfoFromEvent(inputFileName, max_nb_tel):
@@ -65,6 +67,8 @@ try:
 						nbPixel = evt.r0.tel[tel_id].waveform.shape[1]
 						ped = evt.mc.tel[tel_id].pedestal
 						gain =  evt.mc.tel[tel_id].dc_to_pe
+						cameraRotation = evt.inst.subarray.tel[tel_id].camera.pix_rotation
+						pixRotation = evt.inst.subarray.tel[tel_id].camera.cam_rotation
 						
 						telInfo = dicoTelInfo[tel_id]
 						telType = np.uint64(getCameraTypeFromName(telInfo.camera.cam_id))
@@ -82,7 +86,7 @@ try:
 						telZ = posTelZ[tel_id - 1]
 						
 						telescope_info[tel_id] = [ref_shape, nb_slice, ped, gain, telType, focalLen, tabPixelX, tabPixelY, nbMirror,
-										telX, telY, telZ, nbMirrorTiles, mirrorArea, nbGain, nbPixel, 0]
+										telX, telY, telZ, nbMirrorTiles, mirrorArea, nbGain, nbPixel, 0, cameraRotation, pixRotation]
 					else:
 						telescope_info[tel_id][TELINFO_NBEVENT] += 1
 		return telescope_info, nbEvent
