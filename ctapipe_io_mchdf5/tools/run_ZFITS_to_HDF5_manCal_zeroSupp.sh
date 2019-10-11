@@ -9,7 +9,7 @@ OUTFILE_HDF5='/Users/garciaenrique/CTA/output_mchdf5/dl0_442_manCal_PART_I_NoFla
 OUTFILE_HDF5_COMP='/Users/garciaenrique/CTA/output_mchdf5/dl0_442_manCal_PART_I_comp_7.h5'
 COMP_LVL=7
 
-#python lst-simtel_2_hdf5_v2_manCal_and_zeroSupp.py -i ${INFILE} -o ${OUTFILE_HDF5} -cl 0
+#python simtel_2_hdf5_v2_manCal_and_zeroSupp.py -i ${INFILE} -o ${OUTFILE_HDF5} -cl 0
 #MIDDLE=$(date +%s)
 ptrepack --complevel ${COMP_LVL} --complib blosc:zstd ${OUTFILE_HDF5} ${OUTFILE_HDF5_COMP}
 

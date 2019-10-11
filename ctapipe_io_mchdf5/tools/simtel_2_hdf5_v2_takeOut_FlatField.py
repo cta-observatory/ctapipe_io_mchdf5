@@ -185,7 +185,6 @@ def tailcuts_data_volume_reducer_and_application_to_waveform(
         return np.sum(reduced_waveforms_mask)
 
 
-
 def createFileStructure(hfile, telInfo_from_evt):
     '''
     Create the structure of the HDF5 file
@@ -213,7 +212,7 @@ def main():
                         )
     parser.add_argument('-o', '--output', help="hdf5 r1 output file",
                         required=False,
-                        default='/Users/garciaenrique/CTA/output_mchdf5/dl0_442_NoFlatFields_manCal_zeroSupp_PARTI.h5')
+                        default='/Users/garciaenrique/CTA/output_mchdf5/r0_442_NoFlatFields_PARTI.h5')
     parser.add_argument('-m', '--max_event', help="maximum event to reconstuct",
                         required=False, type=int)
     parser.add_argument('-cl', '--compression_level', help="Compression level for the HDF5 file [0-9].",
@@ -259,66 +258,62 @@ def main():
         max_event = nbEvent
     print("\n")
 
-    # nice_events = dict()
-    # for i, event in enumerate(source):
-    #     if i % 500 == 0:
-    #         print(i)
-    #     camera_config = get_camera_calib_config()
-    #     apply_manual_calibration(event, camera_config)
-    #
-    #     # print(event.dl1.tel[0].image.shape)
-    #     num_selected_pix = apply_zero_suppression(event)
-    #     if num_selected_pix > 1755:
-    #         continue
-    #     else:
-    #         nice_events[i] = i
-    #
-    # middle = time.time()
-    # print("")
-    # print("First loop finished in ", np.round((middle-start)/60.,2), " mins.")
-    # print("")
-    #source = event_source(inputFileName)
-
-    nice_events = pickle.load(open('./size_r0_withoutFlatField.pkl', 'rb'))
-
+    nice_events = dict()
+    all_events = dict()
     for i, event in enumerate(source):
-        if i not in nice_events:
-            continue
-        #nice_events[i] = event.r0.tel[0].waveform.astype(np.uint16).nbytes
-
-        # calib(event)
+        if i % 500 == 0:
+            print(i)
         camera_config = get_camera_calib_config()
         apply_manual_calibration(event, camera_config)
 
-        #print(event.dl1.tel[0].image.shape)
-        _ = apply_zero_suppression(event)
+        # print(event.dl1.tel[0].image.shape)
+        num_selected_pix = apply_zero_suppression(event)
 
-        if isSimulationMode:
-            appendCorsikaEvent(tableMcCorsikaEvent, event)
-        appendEventTelescopeData(hfile, event)
-        nb_event += 1
-        print("\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r{} / {}".format(nb_event, max_event), end="")
-        if nb_event >= max_event:
-            break
-    print("\nFlushing tables")
-    if isSimulationMode:
-        tableMcCorsikaEvent.flush()
+        all_events[i] = event.r0.tel[0].waveform.astype(np.uint16).nbytes
 
-    flushR1Tables(hfile)
-    hfile.close()
-    print('\nDone')
+        if num_selected_pix > 1755:
+            continue
+        else:
+            nice_events[i] = event.r0.tel[0].waveform.astype(np.uint16).nbytes
 
+    middle = time.time()
+    print("")
+    print("First loop finished in ", np.round((middle-start)/60.,2), " mins.")
+    print("")
     # Save dict with R0 sizes
-    pickle.dump(nice_events, open("size_r0.pkl", "wb"))
     print("")
-    print("bytes of the file", sum(nice_events.values()), " in np.uint16")
+    pickle.dump(nice_events, open("size_r0_withoutFlatField.pkl", "wb"))
+    print("")
+    print("bytes of the file without FF", sum(nice_events.values()), " in np.uint16")
+    print("bytes of the Real Data file ", sum(all_events.values()), " in np.unit16")
 
-    print("")
-    end = time.time()
-    print(np.round((end-start)/60., 2), " min")
-
-    print("")
-    print("     PHOTO ELECTRON UNIT IN CENT - p.e  !!!!!, i.e. p.e / 100 !!! ")
+    # #  Loop to obtain the HDF5 file without zero Supp, without compression and without calibration
+    # source = event_source(inputFileName)
+    # for i, event in enumerate(source):
+    #     if i not in nice_events:
+    #         continue
+    #
+    #     if isSimulationMode:
+    #         appendCorsikaEvent(tableMcCorsikaEvent, event)
+    #     appendEventTelescopeData(hfile, event)
+    #     nb_event += 1
+    #     print("\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r{} / {}".format(nb_event, max_event), end="")
+    #     if nb_event >= max_event:
+    #         break
+    # print("\nFlushing tables")
+    # if isSimulationMode:
+    #     tableMcCorsikaEvent.flush()
+    #
+    # flushR1Tables(hfile)
+    # hfile.close()
+    # print('\nDone')
+    #
+    # print("")
+    # end = time.time()
+    # print(np.round((end-start)/60., 2), " min")
+    #
+    # print("")
+    # print("     PHOTO ELECTRON UNIT IN CENT - p.e  !!!!!, i.e. p.e / 100 !!! ")
 
 
 if __name__ == '__main__':
