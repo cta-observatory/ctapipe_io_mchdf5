@@ -8,8 +8,8 @@ import tables
 import numpy as np
 import argparse
 
-from .telescope_copy import copyAllTelWithoutWaveform
-from .copy_sort import createSortedWaveformTableShape
+from ctapipe_io_mchdf5.tools.telescope_copy import copyAllTelWithoutWaveform
+from ctapipe_io_mchdf5.tools.copy_sort import createSortedWaveformTableShape
 
 MODE_PES = 0
 MODE_PSE = 1
