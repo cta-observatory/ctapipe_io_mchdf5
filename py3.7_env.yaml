@@ -8,7 +8,7 @@ dependencies:
   - numpydoc
   - pytest
   - pytables
-  - ctapipe-extra=0.2.18
+  - ctapipe-extra=0.2.16
   - pip:
       - pytest_runner
       - https://github.com/cta-observatory/ctapipe-extra/archive/v0.2.16.tar.gz
