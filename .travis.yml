@@ -63,7 +63,7 @@ install:
 
 script:
     - pytest --cov=ctapipe_io_mchdf5
-    - travis-sphinx -v --outdir=docbuild build --source=docs/
+    #- travis-sphinx -v --outdir=docbuild build --source=docs/
 
 after_script:
     - source deactivate
