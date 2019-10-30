@@ -8,27 +8,10 @@ import tables
 import numpy as np
 import argparse
 
-from .copy_sort import createAllTelescopeSorted
+from ctapipe_io_mchdf5.tools.copy_sort import createAllTelescopeSorted
 
 
-def applyInjunctionTableOnMatrix(signalSelect, injunctionTable):
-	'''
-	Apply the injunction talbe on the input matrix
-	Parameters:
-		signalSelect : matrix of the signal (pixel, slice) to be used
-		injunctionTable : injunction table to be used
-	Return:
-		matrix with swaped rows according to the injunction table
-	'''
-	matOut = np.zeros(signalSelect.shape, dtype=signalSelect.dtype)
-	
-	for inputRow, rowIndex in zip(signalSelect, injunctionTable):
-		matOut[rowIndex][:] = inputRow[:]
-	
-	return matOut
-
-
-def sortChannel(outFile, telNodeOut, waveformOut, waveformIn, keyWaveform, nbPixel, tabInjName, isStoreSlicePixel):
+def sortChannel(outFile, telNodeOut, waveformOut, waveformIn, keyWaveform, nbPixel, tabInjName, isStoreSlicePixel, injunctionTable):
 	'''
 	Transpose all the telescopes channels (waveformHi and waveformLo)
 	Parameters:
@@ -40,34 +23,33 @@ def sortChannel(outFile, telNodeOut, waveformOut, waveformIn, keyWaveform, nbPix
 		nbPixel : number of pixel in the camera
 		tabInjName : name of the injunction table array
 		isStoreSlicePixel : true to store data per slice and pixel, false for pixel and slice
+		injunctionTable : injunction table to be used
 	'''
 	waveformIn = waveformIn.col(keyWaveform)
 	waveformInSwap = waveformIn.swapaxes(1,2)
-	#Get mean and standard deviation
-	tabMean = np.mean(waveformIn, axis=(0, 1))
-	tabSigma = np.std(waveformIn, axis=(0, 1))
-	#Index of the pixels
-	tabIndex = np.arange(0, nbPixel)
-	
-	matMeanSigmaIndex = np.ascontiguousarray(np.stack((tabSigma, tabMean, tabIndex)).T)
-	matRes = np.sort(matMeanSigmaIndex.view('f8,f8,f8'), order=['f0', 'f1'], axis=0).view(np.float64)
-	injunctionTable = matRes[:,2].astype(np.uint64)
 	
 	outFile.create_array(telNodeOut, tabInjName, injunctionTable, "Injunction table to store the pixels order of a channel")
-	
 	tabWaveformOut = waveformOut.row
-	for signalSelect in waveformInSwap:
-		tabTmp = applyInjunctionTableOnMatrix(signalSelect, injunctionTable)
-		if isStoreSlicePixel:
-			tabTmp = tabTmp.swapaxes(0, 1)
-		
-		tabWaveformOut[keyWaveform] = tabTmp
-		tabWaveformOut.append()
+	if injunctionTable.size == waveformIn.shape[2]:
+		for signalSelect in waveformInSwap:
+			tabTmp = signalSelect[injunctionTable]
+			if isStoreSlicePixel:
+				tabTmp = tabTmp.swapaxes(0, 1)
+			
+			tabWaveformOut[keyWaveform] = tabTmp
+			tabWaveformOut.append()
+	else:
+		for signalSelect in waveformInSwap:
+			tabTmp = signalSelect
+			if isStoreSlicePixel:
+				tabTmp = tabTmp.swapaxes(0, 1)
+			tabWaveformOut[keyWaveform] = tabTmp
+			tabWaveformOut.append()
 	
 	waveformOut.flush()
 
 
-def copySortedTelescope(outFile, telNodeOut, telNodeIn, isStoreSlicePixel):
+def copySortedTelescope(outFile, telNodeOut, telNodeIn, isStoreSlicePixel, injunctionTable):
 	'''
 	Transpose the telescope data
 	Parameters:
@@ -76,16 +58,17 @@ def copySortedTelescope(outFile, telNodeOut, telNodeIn, isStoreSlicePixel):
 		telNodeOut : output telescope
 		telNodeIn : input telescope
 		isStoreSlicePixel : true to store data per slice and pixel, false for pixel and slice
+		injunctionTable : injunction table to be used
 	'''
 	nbPixel = np.uint64(telNodeIn.nbPixel.read())
-	sortChannel(outFile, telNodeOut, telNodeOut.waveformHi, telNodeIn.waveformHi, "waveformHi", nbPixel, "orderHi", isStoreSlicePixel)
+	sortChannel(outFile, telNodeOut, telNodeOut.waveformHi, telNodeIn.waveformHi, "waveformHi", nbPixel, "orderHi", isStoreSlicePixel, injunctionTable)
 	try:
-		sortChannel(outFile, telNodeOut, telNodeOut.waveformLo, telNodeIn.waveformLo, "waveformLo", nbPixel, "orderLo", isStoreSlicePixel)
+		sortChannel(outFile, telNodeOut, telNodeOut.waveformLo, telNodeIn.waveformLo, "waveformLo", nbPixel, "orderLo", isStoreSlicePixel, injunctionTable)
 	except Exception as e:
 		print(e)
 
 
-def copySortedR1(outFile, inFile, isStoreSlicePixel):
+def copySortedR1(outFile, inFile, isStoreSlicePixel, injunctionTable):
 	'''
 	Transpose all the telescopes data
 	Parameters:
@@ -93,21 +76,23 @@ def copySortedR1(outFile, inFile, isStoreSlicePixel):
 		outFile : output file
 		inFile : input file
 		isStoreSlicePixel : true to store data per slice and pixel, false for pixel and slice
+		injunctionTable : injunction table to be used
 	'''
 	for telNodeIn, telNodeOut in zip(inFile.walk_nodes("/r1", "Group"), outFile.walk_nodes("/r1", "Group")):
 		try:
-			copySortedTelescope(outFile, telNodeOut, telNodeIn, isStoreSlicePixel)
+			copySortedTelescope(outFile, telNodeOut, telNodeIn, isStoreSlicePixel, injunctionTable)
 		except tables.exceptions.NoSuchNodeError as e:
 			pass
 
 
-def sortPixelFile(inputFileName, outputFileName, isStoreSlicePixel):
+def sortPixelFile(inputFileName, outputFileName, isStoreSlicePixel, injunctionTable):
 	'''
 	Sort the pixel inthe output file
 	Parameters:
 		inputFileName : input file to be sorted
 		outputFileName : sorted output file
 		isStoreSlicePixel : true to store data per slice and pixel, false for pixel and slice
+		injunctionTable : injunction table to be used
 	'''
 	inFile = tables.open_file(inputFileName, "r")
 	outFile = tables.open_file(outputFileName, "w", filters=inFile.filters)
@@ -127,7 +112,7 @@ def sortPixelFile(inputFileName, outputFileName, isStoreSlicePixel):
 	except:
 		pass
 	createAllTelescopeSorted(outFile, inFile, isStoreSlicePixel)
-	copySortedR1(outFile, inFile, isStoreSlicePixel)
+	copySortedR1(outFile, inFile, isStoreSlicePixel, injunctionTable)
 	inFile.close()
 	outFile.close()
 
@@ -138,11 +123,14 @@ def main():
 	parser.add_argument('-o', '--output', help="hdf5 r1 v2 output file (sorted)", required=True)
 	parser.add_argument('-p', '--pixelslice', help="store data by (pixel, slice)", required=False)
 	parser.add_argument('-s', '--slicepixel', help="store data by (slice, pixel) default", required=False)
+	parser.add_argument('-t', '--injtab', help="injunction table file containing uint16", required=True)
 	
 	args = parser.parse_args()
 
 	inputFileName = args.input
 	outputFileName = args.output
+	
+	injunctionTable = np.fromfile(args.injtab, dtype=np.uint16)
 	
 	isStoreSlicePixel = True
 	if args.pixelslice != None:
@@ -150,7 +138,7 @@ def main():
 	if args.slicepixel != None:
 		isStoreSlicePixel = True
 	
-	sortPixelFile(inputFileName, outputFileName, isStoreSlicePixel)
+	sortPixelFile(inputFileName, outputFileName, isStoreSlicePixel, injunctionTable)
 
 
 

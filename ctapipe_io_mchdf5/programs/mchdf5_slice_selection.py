@@ -9,7 +9,7 @@ import tables
 import numpy as np
 import argparse
 
-from .telescope_copy import copyTelescopeWithoutWaveform
+from ctapipe_io_mchdf5.tools.telescope_copy import copyTelescopeWithoutWaveform
 
 def createMWaveformTable(hfile, camTelGroup, nameWaveformHi, nbSlice, nbPixel, chunkshape=1):
 	'''

@@ -8,7 +8,7 @@ import tables
 import numpy as np
 import argparse
 
-from .telescope_copy import copyTelescopeWithoutWaveform
+from ctapipe_io_mchdf5.tools.telescope_copy import copyTelescopeWithoutWaveform
 
 def createSortedWaveformTable(hfile, camTelGroup, nameWaveformHi, nbSlice, nbPixel, chunkshape=1):
 	'''
@@ -21,7 +21,7 @@ def createSortedWaveformTable(hfile, camTelGroup, nameWaveformHi, nbSlice, nbPix
 		nbPixel : number of pixels of the camera
 		chunkshape : shape of the chunk to be used to store the data of waveform and minimum
 	'''
-	image_shape = (nbSlice, nbPixel)
+	image_shape = (nbPixel, nbSlice)
 	columns_dict_waveformHi  = {nameWaveformHi: tables.UInt16Col(shape=image_shape)}
 	description_waveformHi = type('description columns_dict_waveformHi', (tables.IsDescription,), columns_dict_waveformHi)
 	hfile.create_table(camTelGroup, nameWaveformHi, description_waveformHi, "Table of waveform of the signal", chunkshape=chunkshape)
@@ -65,19 +65,19 @@ def createAllTelescopeSorted(outFile, inFile, chunkshape=1):
 
 
 
-def applyInjunctionTableOnMatrixSlicepixel(signalSelect, injunctionTable):
+def applyInjunctionTableOnMatrix(signalSelect, injunctionTable):
 	'''
 	Apply the injunction talbe on the input matrix
 	Parameters:
-		signalSelect : matrix of the signal (slice, pixel) to be used
+		signalSelect : matrix of the signal (pixel, slice) to be used
 		injunctionTable : injunction table to be used
 	Return:
 		matrix with swaped rows according to the injunction table
 	'''
 	matOut = np.zeros(signalSelect.shape, dtype=signalSelect.dtype)
 	
-	for i, rowIndex in enumerate(injunctionTable):
-		matOut[:,i] = signalSelect[:,rowIndex]
+	for inputRow, rowIndex in zip(signalSelect, injunctionTable):
+		matOut[rowIndex][:] = inputRow[:]
 	
 	return matOut
 
@@ -95,6 +95,7 @@ def sortChannel(outFile, telNodeOut, waveformOut, waveformIn, keyWaveform, nbPix
 		tabInjName : name of the injunction table array
 	'''
 	waveformIn = waveformIn.col(keyWaveform)
+	waveformInSwap = waveformIn.swapaxes(1,2)
 	#Get mean and standard deviation
 	tabMean = np.mean(waveformIn, axis=(0, 1))
 	tabSigma = np.std(waveformIn, axis=(0, 1))
@@ -108,8 +109,8 @@ def sortChannel(outFile, telNodeOut, waveformOut, waveformIn, keyWaveform, nbPix
 	outFile.create_array(telNodeOut, tabInjName, injunctionTable, "Injunction table to store the pixels order of a channel")
 	
 	tabWaveformOut = waveformOut.row
-	for signalSelect in waveformIn:
-		tabWaveformOut[keyWaveform] = applyInjunctionTableOnMatrixSlicepixel(signalSelect, injunctionTable)
+	for signalSelect in waveformInSwap:
+		tabWaveformOut[keyWaveform] = applyInjunctionTableOnMatrix(signalSelect, injunctionTable)
 		tabWaveformOut.append()
 	
 	waveformOut.flush()
@@ -157,7 +158,7 @@ def sortPixelFile(inputFileName, outputFileName):
 	inFile = tables.open_file(inputFileName, "r")
 	outFile = tables.open_file(outputFileName, "w", filters=inFile.filters)
 	
-	outFile.title = "R1-V2-sortedSlicePixel"
+	outFile.title = "R1-V2-sortedPixelSlice"
 	
 	#Copy the instrument and simulation groups
 	try:

@@ -8,7 +8,7 @@ import tables
 import numpy as np
 import argparse
 
-from .copy_sort import createAllTelescopeSorted
+from ctapipe_io_mchdf5.tools.copy_sort import createAllTelescopeSorted
 
 MODE_RANGE = 0
 MODE_MEAN = 1

@@ -8,7 +8,7 @@ import tables
 import numpy as np
 import argparse
 
-from .min_selection_utils import createAllTelescopeMinSelected
+from ctapipe_io_mchdf5.tools.min_selection_utils import createAllTelescopeMinSelected
 
 
 def processMinSelectionChannelBlock(tabWaveformMin, keyWaveformMin, tabMin, keyMin, tabWaveformPart):

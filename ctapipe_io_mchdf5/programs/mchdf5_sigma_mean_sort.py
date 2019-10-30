@@ -8,7 +8,24 @@ import tables
 import numpy as np
 import argparse
 
-from .copy_sort import createAllTelescopeSorted
+from ctapipe_io_mchdf5.tools.copy_sort import createAllTelescopeSorted
+
+
+def applyInjunctionTableOnMatrix(signalSelect, injunctionTable):
+	'''
+	Apply the injunction talbe on the input matrix
+	Parameters:
+		signalSelect : matrix of the signal (pixel, slice) to be used
+		injunctionTable : injunction table to be used
+	Return:
+		matrix with swaped rows according to the injunction table
+	'''
+	matOut = np.zeros(signalSelect.shape, dtype=signalSelect.dtype)
+	
+	for inputRow, rowIndex in zip(signalSelect, injunctionTable):
+		matOut[rowIndex][:] = inputRow[:]
+	
+	return matOut
 
 
 def sortChannel(outFile, telNodeOut, waveformOut, waveformIn, keyWaveform, nbPixel, tabInjName, isStoreSlicePixel):
@@ -27,22 +44,20 @@ def sortChannel(outFile, telNodeOut, waveformOut, waveformIn, keyWaveform, nbPix
 	waveformIn = waveformIn.col(keyWaveform)
 	waveformInSwap = waveformIn.swapaxes(1,2)
 	#Get mean and standard deviation
-	tabMin = np.min(waveformIn, axis=(0, 1))
-	tabMax = np.max(waveformIn, axis=(0, 1))
-	
-	tabRange = tabMax - tabMin
+	tabMean = np.mean(waveformIn, axis=(0, 1))
+	tabSigma = np.std(waveformIn, axis=(0, 1))
 	#Index of the pixels
 	tabIndex = np.arange(0, nbPixel)
 	
-	matMeanSigmaIndex = np.ascontiguousarray(np.stack((tabRange, tabIndex)).T)
-	matRes = np.sort(matMeanSigmaIndex.view('f8,f8'), order=['f0'], axis=0).view(np.float64)
-	injunctionTable = matRes[:,1].astype(np.uint64)
+	matMeanSigmaIndex = np.ascontiguousarray(np.stack((tabSigma, tabMean, tabIndex)).T)
+	matRes = np.sort(matMeanSigmaIndex.view('f8,f8,f8'), order=['f0', 'f1'], axis=0).view(np.float64)
+	injunctionTable = matRes[:,2].astype(np.uint64)
 	
 	outFile.create_array(telNodeOut, tabInjName, injunctionTable, "Injunction table to store the pixels order of a channel")
 	
 	tabWaveformOut = waveformOut.row
 	for signalSelect in waveformInSwap:
-		tabTmp = signalSelect[injunctionTable]
+		tabTmp = applyInjunctionTableOnMatrix(signalSelect, injunctionTable)
 		if isStoreSlicePixel:
 			tabTmp = tabTmp.swapaxes(0, 1)
 		
