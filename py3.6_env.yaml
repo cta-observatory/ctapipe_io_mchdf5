@@ -8,6 +8,6 @@ dependencies:
   - numpydoc
   - pytest
   - pytables
-  - ctapipe
+  - ctapipe>=0.7
   - pip:
       - pytest_runner

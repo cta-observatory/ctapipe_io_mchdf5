@@ -35,7 +35,6 @@ setup(
 		'numpy>=1.14.0', 
 		'tables>=3.4.4',
 		'ctapipe',
-		'ctapipe-extra',
 		'pytest-cov'
 	],
 	setup_requires=['pytest_runner'],

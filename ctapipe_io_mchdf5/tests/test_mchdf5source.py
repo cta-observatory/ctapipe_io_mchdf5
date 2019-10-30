@@ -3,6 +3,7 @@
 	Mail : aubertp7@gmail.com
 	Licence : CeCILL-C
 '''
+
 from pkg_resources import resource_filename
 import os
 import numpy as np
@@ -17,7 +18,7 @@ example_file_path = resource_filename(
 	'ctapipe_io_mchdf5',
 	os.path.join('tests',
 		'resources',
-		'gamma_test_large_hipecta.h5'
+		'gamma_test_large_hipecta_v2.h5'
 	)
 )
 
@@ -47,7 +48,7 @@ def test_compare_with_simtel():
 		if hipe_event.r0.event_id == event_id :
 			break
 
-	assert(hipe_event.meta['origin'] == "hipehdf5")
+	assert(hipe_event.meta['origin'] == "mchdf5v2")
 	assert(hipe_event.meta['input_url'] == hipefile)
 	assert(hipe_event.meta['max_events'] == None)
 
@@ -86,22 +87,18 @@ def test_compare_with_simtel():
 							   reference_pulse_shape[gain].sum()))
 
 
-
-
-
-
-
 def test_loop_over_telescopes():
 	from ctapipe_io_mchdf5 import MCHDF5EventSource
 
 	n_events = 10
 	inputfile_reader = MCHDF5EventSource(input_url=example_file_path)
 	i = 0
-	for tel in inputfile_reader.run.walk_nodes('/Tel', 'Group'):
+	for tel in inputfile_reader.run.walk_nodes('/r1', 'Group'):
 		try:
-			tabEventId = tel.eventId.read()
-			tabEventId = tabEventId["eventId"]
-			assert (tabEventId[0] == FIRST_EVENT_NUMBER_IN_TEL[i])
+			trigger = tel.trigger.read()
+			tabEventId = trigger["event_id"]
+			#We need to use "in" because hdf5 stores Telescopes in a random order
+			assert (tabEventId[0] in FIRST_EVENT_NUMBER_IN_TEL)
 			i += 1
 		except tables.exceptions.NoSuchNodeError as e:
 			pass
