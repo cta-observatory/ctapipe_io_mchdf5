@@ -56,8 +56,8 @@ class MCHDF5EventSourceV2(EventSource):
 	for native vectorized optimization of analytical data processing.
 	"""
 
-	def __init__(self, config=None, parent=None, **kwargs):
-		super().__init__(config=config, parent=parent, **kwargs)
+	def __init__(self, config=None, tool=None, **kwargs):
+		super().__init__(config=config, tool=tool, **kwargs)
 
 		self.metadata['is_simulation'] = True
 
@@ -189,6 +189,7 @@ class MCHDF5EventSourceV2(EventSource):
 					matSignalPSLo = waveformLo.swapaxes(0, 1)
 					tabHiLo = np.stack((matSignalPSHi, matSignalPSLo))
 					data.r0.tel[telescopeId].waveform = tabHiLo
+					data.r0.tel[telescopeId].num_samples = data.r0.tel[telescopeId].waveform.shape[-1]
 
 					_, _, n_samples = tabHiLo.shape
 					ped = data.mc.tel[telescopeId].pedestal[..., np.newaxis] / n_samples
@@ -261,7 +262,7 @@ class MCHDF5EventSourceV2(EventSource):
 				
 				optic = OpticsDescription.from_name(telName)
 				optic.equivalent_focal_length = foclen
-				telescope_description = TelescopeDescription(telName, telName, optics=optic, camera=camera)
+				telescope_description = TelescopeDescription(optics=optic, camera=camera)
 
 				#tel.optics.mirror_area = mirror_area
 				#tel.optics.num_mirror_tiles = num_tiles
