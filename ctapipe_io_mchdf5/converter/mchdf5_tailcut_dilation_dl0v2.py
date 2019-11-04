@@ -210,9 +210,9 @@ def tailcutDilationSelectionRunFileDl0(fileNameOut, fileNameIn, center, neighbou
 	fileIn.close()
 	
 	fileSize = getFileSize(fileNameOut)
-	print("Cleaning center = {}, neighbours = {}, min_number_picture_neighbors {}, \
-	dilation = {} produce a file of {} bytes or {} MB".format(center, neighbours, min_number_picture_neighbors,
-															  dilation, fileSize, fileSize/1000000))
+	print("Cleaning center = {}, neighbours = {}, min_number_picture_neighbors {}, dilation = {} produce a file of {} bytes or {} MB".format(
+		center, neighbours, min_number_picture_neighbors, dilation, fileSize, fileSize/1000000)
+	)
 
 
 def main():

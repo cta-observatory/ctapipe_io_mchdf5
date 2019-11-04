@@ -42,6 +42,7 @@ def computeSelectionTailCutDilation(fileOut, telNodeOut, telNodeIn, tabFocalTel,
     tableOutWaveforHi = telNodeOut.waveformHi
     rowOutWaveformHi = tableOutWaveforHi.row
 
+    percet_counter = int(len(tabDataWaveformHi) / 100) + 1
     if nbGain > 1:
         print("\tget waveform lo")
         tabDataWaveformLo = telNodeIn.waveformLo.col("waveformLo")
@@ -50,7 +51,8 @@ def computeSelectionTailCutDilation(fileOut, telNodeOut, telNodeIn, tabFocalTel,
 
         i = 0
         for signalHi, signalLo in zip(tabDataWaveformHi, tabDataWaveformLo):
-            print("\tcomputeSelectionTailCutDilation : hi telescope :", telNodeOut._v_name, ", event no", i)
+            if i % percet_counter == 0:
+                print("\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\t\t{} %".format(int(i/percet_counter)), end="")
             tabCalibIntegrateSignal = core.fullCalibIntegration(signalHi, reco_temporary)
             cleaned = hdu.tailcut_cleaning(telType, tabCalibIntegrateSignal, center, neighbours, False,
                                            min_number_picture_neighbors)
@@ -65,13 +67,15 @@ def computeSelectionTailCutDilation(fileOut, telNodeOut, telNodeIn, tabFocalTel,
             rowOutWaveformLo["waveformLo"] = selectedWaveFormLo
             rowOutWaveformLo.append()
             i += 1
-        print("\tcomputeSelectionTailCutDilation :  hi flush telescope :", telNodeOut._v_name)
+        print("\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\t\t100 %")
+        print("\tcomputeSelectionTailCutDilation : hi flush telescope :", telNodeOut._v_name)
         tableOutWaveforHi.flush()
         tableOutWaveforLo.flush()
     else:
         i = 0
         for signalHi in tabDataWaveformHi:
-            print("\tcomputeSelectionTailCutDilation : lo telescope :", telNodeOut._v_name, ", event no", i)
+            if i % percet_counter == 0:
+                print("\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\t\t{} %".format(int(i/percet_counter)), end="")
             tabCalibIntegrateSignal = core.fullCalibIntegration(signalHi, reco_temporary)
             cleaned = hdu.tailcut_cleaning(telType, tabCalibIntegrateSignal, center, neighbours, False,
                                            min_number_picture_neighbors)
@@ -82,6 +86,7 @@ def computeSelectionTailCutDilation(fileOut, telNodeOut, telNodeIn, tabFocalTel,
             rowOutWaveformHi["waveformHi"] = selectedWaveFormHi
             rowOutWaveformHi.append()
             i += 1
+        print("\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\t\t100 %")
         print("\tcomputeSelectionTailCutDilation : lo flush telescope :", telNodeOut._v_name)
         tableOutWaveforHi.flush()
 
@@ -211,14 +216,14 @@ def tailcutDilationSelectionRunFile(fileNameOut, fileNameIn, center, neighbours,
     fileIn.close()
 
     fileSize = getFileSize(fileNameOut)
-    print("Cleaning center = {}, neighbours = {}, min_number_picture_neighbors {}, dilation = {} produce a file \
-	of {} bytes or {} MB".format(center, neighbours, min_number_picture_neighbors, dilation,
-                                 fileSize, fileSize / 1000000))
+    print("Cleaning center = {}, neighbours = {}, min_number_picture_neighbors {}, dilation = {} produce a file of {} bytes or {} MB".format(
+        center, neighbours, min_number_picture_neighbors, dilation, fileSize, fileSize / 1000000)
+    )
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '--input', help="MC hdf5 input file", required=True)
+    parser.add_argument('-i', '--input', help="MC hdf5-R1 input file", required=True)
     parser.add_argument('-o', '--output', help="hdf5 v1 (selection convert to average) output file", required=True)
     parser.add_argument('-c', '--center', help="Center threshold for the tailcut cleaning", required=True, type=float)
     parser.add_argument('-n', '--neighbours', help="Neighbour threshold for the tailcut cleaning", required=True,
@@ -226,7 +231,7 @@ def main():
     parser.add_argument('-d', '--dilation', help="Number of rings of dilation", required=True, type=int)
     parser.add_argument('-m', '--min_number_picture_neighbors',
                         help="Minimum number of neighbours to be consider around a pixel", required=True, type=int)
-    parser.add_argument('-z', '--compressionlevel', help="Compression level to be used (from 1 to 9). Default = 1",
+    parser.add_argument('-z', '--compressionlevel', help="Compression level to be used (from 1 to 9). Default=1",
                         required=False, type=int, default=1)
 
     args = parser.parse_args()
