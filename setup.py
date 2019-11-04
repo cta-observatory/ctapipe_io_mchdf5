@@ -11,17 +11,17 @@ entry_points = {}
 entry_points['console_scripts'] = ['mchdf5_simtel2r1 = ctapipe_io_mchdf5.converter.mchdf5_simtel2r1:main',
 					'mchdf5_tailcut_dilation_dl0v1 = ctapipe_io_mchdf5.converter.mchdf5_tailcut_dilation_dl0v1:main',
 					'mchdf5_tailcut_dilation_dl0v2 = ctapipe_io_mchdf5.converter.mchdf5_tailcut_dilation_dl0v2:main',
-					'mchdf5v2minselection = ctapipe_io_mchdf5.programs.mchdf5_min_selection:main',
-					'mchdf5v2sliceselection = ctapipe_io_mchdf5.programs.mchdf5_slice_selection:main',
-					'mchdf5v2extractsignaltensor = ctapipe_io_mchdf5.programs.mchdf5_extract_signal_tensor:main',
-					'mchdf5v2transpose = ctapipe_io_mchdf5.programs.mchdf5_transpose:main',
-					'mchdf5v2meansigmasortpixelslice = ctapipe_io_mchdf5.programs.mchdf5_mean_sigma_sort:main',
-					'mchdf5v2meansigmasortslicepixel = ctapipe_io_mchdf5.programs.mchdf5_mean_sigma_sort_slice_pixel:main',
-					'mchdf5v2rangesort = ctapipe_io_mchdf5.programs.mchdf5_range_sort:main',
-					'mchdf5v2sigmameansort = ctapipe_io_mchdf5.programs.mchdf5_sigma_mean_sort:main',
-					'mchdf5v2multiplesort = ctapipe_io_mchdf5.programs.mchdf5_multiple_sort:main',
-					'mchdf5v2storebypixelorslice = ctapipe_io_mchdf5.programs.mchdf5_store_by_pixel_or_slice:main',
-					'mchdf5v2injtabsort = ctapipe_io_mchdf5.programs.mchdf5_injtab_sort:main'
+					'test_mchdf5v2minselection = ctapipe_io_mchdf5.programs.mchdf5_min_selection:main',
+					'test_mchdf5v2sliceselection = ctapipe_io_mchdf5.programs.mchdf5_slice_selection:main',
+					'test_mchdf5v2extractsignaltensor = ctapipe_io_mchdf5.programs.mchdf5_extract_signal_tensor:main',
+					'test_mchdf5v2transpose = ctapipe_io_mchdf5.programs.mchdf5_transpose:main',
+					'test_mchdf5v2meansigmasortpixelslice = ctapipe_io_mchdf5.programs.mchdf5_mean_sigma_sort:main',
+					'test_mchdf5v2meansigmasortslicepixel = ctapipe_io_mchdf5.programs.mchdf5_mean_sigma_sort_slice_pixel:main',
+					'test_mchdf5v2rangesort = ctapipe_io_mchdf5.programs.mchdf5_range_sort:main',
+					'test_mchdf5v2sigmameansort = ctapipe_io_mchdf5.programs.mchdf5_sigma_mean_sort:main',
+					'test_mchdf5v2multiplesort = ctapipe_io_mchdf5.programs.mchdf5_multiple_sort:main',
+					'test_mchdf5v2storebypixelorslice = ctapipe_io_mchdf5.programs.mchdf5_store_by_pixel_or_slice:main',
+					'test_mchdf5v2injtabsort = ctapipe_io_mchdf5.programs.mchdf5_injtab_sort:main'
 					]
 
 setup(
