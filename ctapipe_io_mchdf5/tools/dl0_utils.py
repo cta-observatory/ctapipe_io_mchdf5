@@ -8,7 +8,7 @@ import numbers
 import tables
 import numpy as np
 
-from .r1_utils import createBaseTelescopeGroupTable
+from .r1_utils import create_base_telescope_group_table
 
 
 def createDL0TableTel(hfile, telNode, nbGain, nbPixel, nbSlice, chunkshape=1):
@@ -54,7 +54,7 @@ def createDL0TelGroupAndTable(hfile, telId, telInfo, chunkshape=1):
 		telInfo : table of some informations related to the telescope
 		chunkshape : shape of the chunk to be used to store the data
 	'''
-	camTelGroup = createBaseTelescopeGroupTable(hfile, telId, telInfo, chunkshape=chunkshape)
+	camTelGroup = create_base_telescope_group_table(hfile, telId, telInfo, chunkshape=chunkshape)
 	
 	nbGain = np.uint64(telInfo[TELINFO_NBGAIN])
 	nbPixel = np.uint64(telInfo[TELINFO_NBPIXEL])

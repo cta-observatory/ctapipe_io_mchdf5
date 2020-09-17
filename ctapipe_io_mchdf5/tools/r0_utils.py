@@ -12,6 +12,7 @@ try:
 except:
 	pass
 
+
 class TriggerInfo(tables.IsDescription):
 	'''
 	Describe the trigger informations of the telescopes events
@@ -26,6 +27,15 @@ class TriggerInfo(tables.IsDescription):
 	time_s = tables.UInt32Col()
 	time_qns = tables.UInt32Col()
 	obs_id = tables.UInt64Col()
+
+
+class TelescopePointing(tables.IsDescription):
+	"""
+	Create the telescope point table
+	"""
+	telescopetrigger_time = tables.Float32Col()
+	azimuth = tables.Float32Col()
+	altitude = tables.Float32Col()
 
 
 def createWaveformTel(hfile, telNode, nbGain, image_shape, chunkshape=1):
@@ -70,7 +80,7 @@ def createTablePedestal(hfile, camTelGroup, nbGain, nbPixel):
 	return tablePedestal
 
 
-def createBaseTelescopeGroupTable(hfile, telId, telInfo, chunkshape=1):
+def create_base_telescope_group_table(hfile, telId, telInfo, chunkshape=1):
 	'''
 	Create the base of the telescope structure without waveform
 	Parameters:
@@ -84,7 +94,13 @@ def createBaseTelescopeGroupTable(hfile, telId, telInfo, chunkshape=1):
 		Created camera group
 	'''
 	telIndex = telId - 1
-	camTelGroup = hfile.create_group("/r1", "Tel_"+str(telId), 'Data of telescopes '+str(telId))
+	# TODO verifier que ça marche
+	cam_tel_table = hfile.create_table(hfile.root.r0.monitoring.telescope.pointing, 'tel_{0:0=3d}'.format(telId), TelescopePointing, 'Pointing of telescopes '+str(telId))
+
+	cam_tel_table_row = cam_tel_table.row
+	cam_tel_table_row['telescopetrigger_time'] = np.float32(0)  # TODO find where this info comes from
+	cam_tel_table_row['azimuth'] = np.float32(0)  # TODO find where this info comes from
+	cam_tel_table_row['altitude'] = np.float32(0)  # TODO find where this info comes from
 	
 	telType = np.uint64(telInfo[TELINFO_TELTYPE])
 	
@@ -101,30 +117,30 @@ def createBaseTelescopeGroupTable(hfile, telId, telInfo, chunkshape=1):
 	
 	nbEvent = np.uint64(telInfo[TELINFO_NBEVENT])
 	
-	hfile.create_array(camTelGroup, 'nbPixel', nbPixel, "Number of pixels of the telescope")
-	hfile.create_array(camTelGroup, 'nbSlice', nbSlice, "Number of slices of the telescope")
-	hfile.create_array(camTelGroup, 'nbGain', nbGain, "Number of gain (channels) of the telescope")
+	hfile.create_array(cam_tel_table, 'nbPixel', nbPixel, "Number of pixels of the telescope")
+	hfile.create_array(cam_tel_table, 'nbSlice', nbSlice, "Number of slices of the telescope")
+	hfile.create_array(cam_tel_table, 'nbGain', nbGain, "Number of gain (channels) of the telescope")
 
-	hfile.create_array(camTelGroup, 'telIndex', telIndex, "Index of the telescope")
-	hfile.create_array(camTelGroup, 'telType', telType, "Type of the telescope (0 : LST, 1 : NECTAR, 2 : FLASH, 3 : SCT, 4 : ASTRI, 5 : DC, 6 : GCT)")
-	hfile.create_array(camTelGroup, 'telId', telId, "Id of the telescope")
+	hfile.create_array(cam_tel_table, 'telIndex', telIndex, "Index of the telescope")
+	hfile.create_array(cam_tel_table, 'telType', telType, "Type of the telescope (0 : LST, 1 : NECTAR, 2 : FLASH, 3 : SCT, 4 : ASTRI, 5 : DC, 6 : GCT)")
+	hfile.create_array(cam_tel_table, 'telId', telId, "Id of the telescope")
 	
 	infoRefShape = telInfo[TELINFO_REFSHAPE]
 	tabRefShape = np.asarray(infoRefShape, dtype=np.float32)
 	if infoRefShape is not None:
 		nbSample = np.uint64(tabRefShape.shape[1])
-		hfile.create_array(camTelGroup, 'tabRefShape', tabRefShape, "Reference pulse shape of the pixel of the telescope (channel, pixel, sample)")
+		hfile.create_array(cam_tel_table, 'tabRefShape', tabRefShape, "Reference pulse shape of the pixel of the telescope (channel, pixel, sample)")
 	
 	if infoTabGain is not None:
-		hfile.create_array(camTelGroup, 'tabGain', tabGain, "Table of the gain of the telescope (channel, pixel)")
+		hfile.create_array(cam_tel_table, 'tabGain', tabGain, "Table of the gain of the telescope (channel, pixel)")
 	
-	hfile.create_table(camTelGroup, 'trigger', TriggerInfo, "Trigger of the telescope events", chunkshape=chunkshape)
+	hfile.create_table(cam_tel_table, 'trigger', TriggerInfo, "Trigger of the telescope events", chunkshape=chunkshape)
 	
 	columns_dict_photo_electron_image  = {"photo_electron_image": tables.Float32Col(shape=nbPixel)}
 	description_photo_electron_image = type('description columns_dict_photo_electron_image', (tables.IsDescription,), columns_dict_photo_electron_image)
-	hfile.create_table(camTelGroup, 'photo_electron_image', description_photo_electron_image, "Table of real signal in the camera (for simulation only)", chunkshape=chunkshape)
+	hfile.create_table(cam_tel_table, 'photo_electron_image', description_photo_electron_image, "Table of real signal in the camera (for simulation only)", chunkshape=chunkshape)
 	
-	tablePedestal = createTablePedestal(hfile, camTelGroup, nbGain, nbPixel)
+	tablePedestal = createTablePedestal(hfile, cam_tel_table, nbGain, nbPixel)
 	
 	if infoTabPed is not None:
 		tabPedForEntry = tablePedestal.row
@@ -134,14 +150,14 @@ def createBaseTelescopeGroupTable(hfile, telId, telInfo, chunkshape=1):
 		tabPedForEntry.append()
 		tablePedestal.flush()
 	
-	return camTelGroup
-
+	return cam_tel_table
 
 
 def createTelGroupAndTable(hfile, telId, telInfo, chunkshape=1):
 	'''
 	Create the telescope group and table
-	It is important not to add an other dataset with the type of the camera to simplify the serach of a telescope by telescope index in the file structure
+	It is important not to add an other dataset with the type of the camera to simplify the serach of a telescope by
+	telescope index in the file structure
 	Parameters:
 	-----------
 		hfile : HDF5 file to be used
@@ -149,7 +165,7 @@ def createTelGroupAndTable(hfile, telId, telInfo, chunkshape=1):
 		telInfo : table of some informations related to the telescope
 		chunkshape : shape of the chunk to be used to store the data
 	'''
-	camTelGroup = createBaseTelescopeGroupTable(hfile, telId, telInfo, chunkshape=chunkshape)
+	camTelGroup = create_base_telescope_group_table(hfile, telId, telInfo, chunkshape=chunkshape)
 	
 	nbGain = np.uint64(telInfo[TELINFO_NBGAIN])
 	nbPixel = np.uint64(telInfo[TELINFO_NBPIXEL])
@@ -166,10 +182,14 @@ def createR1Dataset(hfile, telInfo_from_evt):
 		hfile : HDF5 file to be used
 		telInfo_from_evt : information of telescopes
 	'''
-	#Group : r1
-	hfile.create_group("/", 'r1', 'Raw data waveform informations of the run')
+	# Group : r0
+	hfile.create_group("/", 'r0', 'Raw data waveform information of the run')
+	monitoring_group = hfile.create_group('/', 'monitoring', 'Telescope monitoring')
+	monitoring_tel_group = hfile.create_group('/monitoring', 'telescope', 'Telescopes')
+	point_monitoring_tel_group = hfile.create_group('/monitoring/telescope', 'pointing', 'Pointing of each telescope')
+	subarray_monitoring_group = hfile.create_group('/monitoring', 'subarray', 'Subarrays')
 	
-	#The group in the r1 group will be completed on the fly with the informations collected in telInfo_from_evt
+	# The group in the r0 group will be completed on the fly with the information collected in telInfo_from_evt
 	for telId, telInfo in telInfo_from_evt.items():
 		createTelGroupAndTable(hfile, telId, telInfo)
 
