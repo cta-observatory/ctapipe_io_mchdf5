@@ -11,7 +11,7 @@ try:
 except:
 	pass
 
-from .camera_tel_type import getCameraTypeFromName, getCameraNameFromType, getTelescopeTypeStrFromCameraType
+from .camera_tel_type import get_camera_type_from_name, getCameraNameFromType, getTelescopeTypeStrFromCameraType
 
 TELINFO_REFSHAPE = 0
 TELINFO_NBSLICE = 1
@@ -71,7 +71,7 @@ def getTelescopeInfoFromEvent(inputFileName, max_nb_tel):
 					pixRotation = evt.inst.subarray.tel[tel_id].camera.cam_rotation
 					
 					telInfo = dicoTelInfo[tel_id]
-					telType = np.uint64(getCameraTypeFromName(telInfo.camera.cam_id))
+					telType = np.uint64(get_camera_type_from_name(telInfo.camera.cam_id))
 					focalLen = np.float32(telInfo.optics.equivalent_focal_length.value)
 					
 					tabPixelX = np.asarray(telInfo.camera.pix_x, dtype=np.float32)

@@ -45,7 +45,7 @@ def createFileStructure(hfile, telInfo_from_evt, enableSimulation=True):
 	createR1Dataset(hfile, telInfo_from_evt)
 	createInstrumentDataset(hfile, telInfo_from_evt)
 	if enableSimulation:
-		tableMcEvent = createSimiulationDataset(hfile)
+		tableMcEvent = create_simulation_dataset(hfile)
 		return tableMcEvent
 	else:
 		return None

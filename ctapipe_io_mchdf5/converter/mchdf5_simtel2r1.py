@@ -13,13 +13,13 @@ import argparse
 
 from ..tools.get_nb_tel import getNbTel
 from ..tools.r1_file import *
-from ..tools.r1_utils import *
+from ..tools.r1_utils import createR1Dataset
 from ..tools.get_telescope_info import *
-from ..tools.simulation_utils import *
-from ..tools.instrument_utils import *
+from ..tools.simulation_utils import create_simulation_dataset
+from ..tools.instrument_utils import create_instrument_dataset
 
 
-def createFileStructure(hfile, telInfo_from_evt):
+def create_file_structure(hfile, telInfo_from_evt):
 	'''
 	Create the structure of the HDF5 file
 	Parameters:
@@ -31,8 +31,8 @@ def createFileStructure(hfile, telInfo_from_evt):
 		table of mc_event
 	'''
 	createR1Dataset(hfile, telInfo_from_evt)
-	createInstrumentDataset(hfile, telInfo_from_evt)
-	tableMcEvent = createSimiulationDataset(hfile)
+	create_instrument_dataset(hfile, telInfo_from_evt)
+	tableMcEvent = create_simulation_dataset(hfile)
 	return tableMcEvent
 
 
@@ -61,19 +61,19 @@ def main():
 	hfile = openOutputFile(args.output, compressionLevel=args.compression)
 	
 	print('Create file structure')
-	tableMcCorsikaEvent = createFileStructure(hfile, telInfo_from_evt)
+	tableMcCorsikaEvent = create_file_structure(hfile, telInfo_from_evt)
 	
 	print('Fill the subarray layout information')
-	fillSubarrayLayout(hfile, telInfo_from_evt, nbTel)
+	fill_subarray_layout(hfile, telInfo_from_evt, nbTel)
 	
 	isSimulationMode = checkIsSimulationFile(telInfo_from_evt)
 	
 	if isSimulationMode:
 		print('Fill the optic description of the telescopes')
-		fillOpticDescription(hfile, telInfo_from_evt, nbTel)
+		fill_optic_description(hfile, telInfo_from_evt, nbTel)
 		
 		print('Fill the simulation header information')
-		fillSimulationHeaderInfo(hfile, inputFileName)
+		fill_simulation_header_info(hfile, inputFileName)
 	
 	source = event_source(inputFileName)
 	
@@ -86,7 +86,7 @@ def main():
 	print("\n")
 	for event in source:
 		if isSimulationMode:
-			appendCorsikaEvent(tableMcCorsikaEvent, event)
+			append_corsika_event(tableMcCorsikaEvent, event)
 		appendEventTelescopeData(hfile, event)
 		nb_event += 1
 		print("\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r{} / {}".format(nb_event, max_event), end="")

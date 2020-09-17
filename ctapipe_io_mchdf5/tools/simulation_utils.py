@@ -9,6 +9,7 @@ import numpy as np
 
 from ctapipe.io import event_source
 
+
 class RunConfigEvent(tables.IsDescription):
 	'''
 	Configuration of the simulated events
@@ -90,7 +91,7 @@ class RunConfigEvent(tables.IsDescription):
 	spectral_index = tables.Float32Col()
 
 
-class ThrowEventDistribution(tables.IsDescription):
+class ShowerDistribution(tables.IsDescription):
 	'''
 	Distribution of the simulated events
 	Attributes:
@@ -115,44 +116,44 @@ class MCEvent(tables.IsDescription):
 	----------
 	event_id : tables.UInt64Col
 		Shower event id.
-	mc_alt : tables.Float32Col
+	true_alt : tables.Float32Col
 		Shower altitude (zenith) angle. From Monte Carlo simulation parameters.
-	mc_az : tables.Float32Col
+	true_az : tables.Float32Col
 		Shower azimuth angle. From Monte Carlo simulation parameters.
-	mc_core_x : tables.Float32Col
+	true_core_x : tables.Float32Col
 		Shower core position x coordinate. From Monte Carlo simulation
 		parameters.
-	mc_core_y : tables.Float32Col
+	true_core_y : tables.Float32Col
 		Shower core position y coordinate. From Monte Carlo simulation
 		parameters.
-	mc_energy : tables.Float32Col
+	true_energy : tables.Float32Col
 		Energy of the shower primary particle. From Monte Carlo simulation
 		parameters.
-	mc_h_first_int : tables.Float32Col
+	true_h_first_int : tables.Float32Col
 		Height of shower primary particle first interaction. From Monte Carlo
 		simulation parameters.
-	mc_shower_primary_id : tables.UInt8Col
+	true_shower_primary_id : tables.UInt8Col
 		Particle type id for the shower primary particle. From Monte Carlo
 		simulation parameters.
-	mc_x_max : tables.Float32Col
+	true_x_max : tables.Float32Col
 		Atmospheric depth of shower maximum [g/cm^2], derived from all charged particles
 	obs_id : tables.UInt64Col
 		Shower observation (run) id. Replaces old "run_id" in ctapipe r0
 		container.
 	'''
 	event_id = tables.UInt64Col()
-	mc_alt = tables.Float32Col()
-	mc_az = tables.Float32Col()
-	mc_core_x = tables.Float32Col()
-	mc_core_y = tables.Float32Col()
-	mc_energy = tables.Float32Col()
-	mc_h_first_int = tables.Float32Col()
-	mc_shower_primary_id = tables.UInt64Col()
-	mc_x_max = tables.Float32Col()
+	true_alt = tables.Float32Col()
+	true_az = tables.Float32Col()
+	true_core_x = tables.Float32Col()
+	true_core_y = tables.Float32Col()
+	true_energy = tables.Float32Col()
+	true_h_first_int = tables.Float32Col()
+	true_shower_primary_id = tables.UInt64Col()
+	true_x_max = tables.Float32Col()
 	obs_id = tables.UInt64Col()
 
 
-def createSimiulationDataset(hfile):
+def create_simulation_dataset(hfile):
 	'''
 	Create the simulation dataset
 	Parameters:
@@ -162,16 +163,22 @@ def createSimiulationDataset(hfile):
 	-------
 		table of the mc_event
 	'''
-	simulationGroup = hfile.create_group("/", 'simulation', 'Simulation informations of the run')
-	hfile.create_table(simulationGroup, 'run_config', RunConfigEvent, "Configuration of the simulated events", expectedrows=1)
-	hfile.create_table(simulationGroup, 'thrown_event_distribution', ThrowEventDistribution, "Distribution of the simulated events")
-	tableMcEvent = hfile.create_table(simulationGroup, 'mc_event', MCEvent, "All simulated Corsika events")
-	return tableMcEvent
+	simulation_group = hfile.create_group('/', 'simulation', 'Simulation information of the run')
+	service_group = hfile.create_group('/simulation', 'service', 'Service simulation')
+	hfile.create_table(service_group, 'shower_distribution', ShowerDistribution, 'Distribution of the simulated events')
+
+	# configuration group already created in `instrument_utils.py`
+	config_sim_group = hfile.create_group('/configuration', 'simulation', 'Configuration simulation information of the run')
+	hfile.create_table(config_sim_group, 'run', RunConfigEvent, "Configuration of the simulated events", expectedrows=1)
+	event_group = hfile.create_group('/simulation', 'event', 'Event simulation')
+	sim_event_subarray_group = hfile.create_group('/simulation/event', 'subarray', 'Subarray shower')
+	table_mc_event = hfile.create_table(sim_event_subarray_group, 'shower', MCEvent, "All simulated Corsika events")
+	return table_mc_event
 
 
-def fillSimulationHeaderInfo(hfile, inputFileName):
+def fill_simulation_header_info(hfile, inputFileName):
 	'''
-	Fill the simulation informations in the simulation header (/simulation/run_config)
+	Fill the simulation information in the simulation header (/simulation/run_config)
 	Parameters:
 	-----------
 		hfile : HDF5 file to be used
@@ -180,7 +187,7 @@ def fillSimulationHeaderInfo(hfile, inputFileName):
 	with event_source(inputFileName) as source:
 		evt = next(iter(source))
 		
-		tableSimulationConfig = hfile.root.simulation.run_config
+		tableSimulationConfig = hfile.root.configuration.simulation.run
 		tabSimConf = tableSimulationConfig.row
 		
 		mcHeader = evt.mcheader
@@ -224,9 +231,9 @@ def fillSimulationHeaderInfo(hfile, inputFileName):
 		tabSimConf.append()
 
 
-def appendCorsikaEvent(tableMcCorsikaEvent, event):
+def append_corsika_event(tableMcCorsikaEvent, event):
 	'''
-	Append the Monte Carlo informations in the table of Corsika events
+	Append the Monte Carlo information in the table of Corsika events
 	------
 	Parameter :
 		tableMcCorsikaEvent : table of Corsika events to be completed
@@ -234,17 +241,17 @@ def appendCorsikaEvent(tableMcCorsikaEvent, event):
 	'''
 	tabMcEvent = tableMcCorsikaEvent.row
 	tabMcEvent['event_id'] = np.uint64(event.r0.event_id)
-	tabMcEvent['mc_az'] = np.float32(event.mc.az)
-	tabMcEvent['mc_alt'] = np.float32(event.mc.alt)
+	tabMcEvent['true_az'] = np.float32(event.mc.az)
+	tabMcEvent['true_alt'] = np.float32(event.mc.alt)
 	
-	tabMcEvent['mc_core_x'] = np.float32(event.mc.core_x)
-	tabMcEvent['mc_core_y'] = np.float32(event.mc.core_y)
+	tabMcEvent['true_core_x'] = np.float32(event.mc.core_x)
+	tabMcEvent['true_core_y'] = np.float32(event.mc.core_y)
 	
-	tabMcEvent['mc_energy'] = np.float32(event.mc.energy)
-	tabMcEvent['mc_h_first_int'] = np.float32(event.mc.h_first_int)
-	tabMcEvent['mc_shower_primary_id'] = np.uint8(event.mc.shower_primary_id)
+	tabMcEvent['true_energy'] = np.float32(event.mc.energy)
+	tabMcEvent['true_h_first_int'] = np.float32(event.mc.h_first_int)
+	tabMcEvent['true_shower_primary_id'] = np.uint8(event.mc.shower_primary_id)
 	
-	tabMcEvent['mc_x_max'] = np.float32(event.mc.x_max)
+	tabMcEvent['true_x_max'] = np.float32(event.mc.x_max)
 	
 	tabMcEvent['obs_id'] = np.uint64(event.r0.obs_id)
 	
@@ -255,5 +262,3 @@ def appendCorsikaEvent(tableMcCorsikaEvent, event):
 	#tabMcEvent['cmax'] = np.float32(0.0)
 	
 	tabMcEvent.append()
-
-

@@ -8,6 +8,7 @@ import tables
 import numpy as np
 from .get_telescope_info import *
 
+
 class SubarrayLayout(tables.IsDescription):
 	'''
 	Layout of the subarray
@@ -46,6 +47,8 @@ class OpticDescription(tables.IsDescription):
 		mirror_area : area of the mirror in meters square
 		num_mirror_tiles : number of mirrors tiles
 		equivalent_focal_length : equivalent focal lenght of the mirror in meters
+		camera_rotation : rotation [rad] of the camera
+		pixel_rotation : rotation [rad] of the angel
 	'''
 	description = tables.StringCol(14, dflt=b'')
 	name = tables.StringCol(5, dflt=b'')
@@ -54,9 +57,21 @@ class OpticDescription(tables.IsDescription):
 	num_mirrors = tables.UInt64Col()
 	num_mirror_tiles = tables.UInt64Col()
 	equivalent_focal_length = tables.Float32Col(shape=(), dflt=0.0, pos=6)
+	cam_rotation = tables.Float32Col()
+	pix_rotation = tables.Float32Col()
 
 
-def fillSubarrayLayout(hfile, telInfo_from_evt, nbTel):
+class CameraGeometry(tables.IsDescription):
+	"""
+	Camera geometry
+	"""
+	pix_id = tables.UInt64Col()
+	pix_x = tables.Float32Col()
+	pix_y = tables.Float32Col()
+	pix_area = tables.Float32Col()
+
+
+def fill_subarray_layout(hfile, telInfo_from_evt, nbTel):
 	'''
 	Fill the subarray informations
 	Parameters:
@@ -65,7 +80,7 @@ def fillSubarrayLayout(hfile, telInfo_from_evt, nbTel):
 		telInfo_from_evt : information of telescopes
 		nbTel : number of telescope in the run
 	'''
-	tableSubarrayLayout = hfile.root.instrument.subarray.layout
+	tableSubarrayLayout = hfile.root.configuration.instrument.subarray.layout
 	tabSubLayout = tableSubarrayLayout.row
 	
 	for telIndexIter in range(0, nbTel):
@@ -73,19 +88,19 @@ def fillSubarrayLayout(hfile, telInfo_from_evt, nbTel):
 		if telId in telInfo_from_evt:
 			telInfo = telInfo_from_evt[telId]
 			telType = telInfo[TELINFO_TELTYPE]
-			camName = getCameraNameFromType(telType)
+			camera_name = getCameraNameFromType(telType)
 			telTypeStr = getTelescopeTypeStrFromCameraType(telType)
 			
 			tabSubLayout["tel_id"] = np.uint64(telId)
 			tabSubLayout["pos_x"] = np.float32(telInfo[TELINFO_TELPOSX])
 			tabSubLayout["pos_y"] = np.float32(telInfo[TELINFO_TELPOSY])
 			tabSubLayout["pos_z"] = np.float32(telInfo[TELINFO_TELPOSZ])
-			tabSubLayout["name"] = camName
+			tabSubLayout["name"] = camera_name
 			tabSubLayout["type"] = telTypeStr
 			tabSubLayout["type_id"] = np.uint64(telType)
 			
 			tabSubLayout["num_mirrors"] = np.uint64(telInfo[TELINFO_NBMIRROR])
-			tabSubLayout["camera_type"] = camName + "Cam"
+			tabSubLayout["camera_type"] = camera_name + "Cam"
 			tabSubLayout["tel_description"] = "Description"
 			tabSubLayout.append()
 		else:
@@ -104,63 +119,62 @@ def fillSubarrayLayout(hfile, telInfo_from_evt, nbTel):
 	tableSubarrayLayout.flush()
 
 
-def createCameraTable(hfile, telId, telInfo):
+def create_camera_table(hfile, telInfo):
 	'''
 	Create a table to describe a camera
 	Parameters:
 	-----------
 		hfile : HDF5 file to be used
-		telId : id of the telescope
 		telInfo : table of some informations related to the telescope
 	'''
-	
-	camTelGroup = hfile.create_group("/instrument/subarray/telescope/camera", "Cam_"+str(telId), 'Camera of telescope '+str(telId))
-	
+	camera_name = 'geometry_' + getCameraNameFromType(telInfo[TELINFO_TELTYPE])
+
 	pix_x = np.asarray(telInfo[TELINFO_TABPIXELX], dtype=np.float32)
-	hfile.create_array(camTelGroup, 'pix_x', pix_x, "Position of the pixels on the X axis of the camera in meters")
-	
 	pix_y = np.asarray(telInfo[TELINFO_TABPIXELY], dtype=np.float32)
-	hfile.create_array(camTelGroup, 'pix_y', pix_y, "Position of the pixels on the Y axis of the camera in meters")
-	
-	#You can get it direcly from telInfo if you complete the field
+
+	# You can get it directly from telInfo if you complete the field from `get_telescope_info`
 	pix_id = np.arange(0, pix_y.size, dtype=np.uint64)
-	hfile.create_array(camTelGroup, 'pix_id', pix_id, "Id of the pixels of the camera")
-	
-	pix_area = np.float32(0.0)
-	hfile.create_array(camTelGroup, 'pix_area', pix_area, "Area of the pixels in meters square")
-	
-	cameraRotation = np.float32(telInfo[TEL_INFOR_CAMERA_ROTATION])
-	hfile.create_array(camTelGroup, 'cam_rotation', cameraRotation, "Rotation of the camera")
-	
-	pixRotation = np.float32(telInfo[TEL_INFOR_PIX_ROTATION])
-	hfile.create_array(camTelGroup, 'pix_rotation', pixRotation, "Rotation of the pixels")
+	pix_area = np.zeros(pix_y.size, dtype=np.float32)
+
+	# TODO create try cath with the correct expcetion -  we don't know which is it
+	camera_telescope_table = hfile.create_table("/configuration/instrument/telescope/camera", camera_name, CameraGeometry, "Geometry of " + str(getCameraNameFromType(telInfo[TELINFO_TELTYPE])))
+
+	camera_tel_row = camera_telescope_table.row
+	for item in zip(pix_x, pix_y, pix_id, pix_area):
+		camera_tel_row["pix_x"] = item[0]
+		camera_tel_row["pix_y"] = item[1]
+		camera_tel_row["pix_id"] = item[2]
+		camera_tel_row["pix_area"] = item[3]
+
+		camera_tel_row.append()
 
 
-def createInstrumentDataset(hfile, telInfo_from_evt):
-	'''
+def create_instrument_dataset(hfile, telInfo_from_evt):
+	"""
 	Create the instrument dataset
 	Parameters:
 		hfile : HDF5 file to be used
 		telInfo_from_evt : information of telescopes
-	'''
-	#Group : instrument
-	hfile.create_group("/", 'instrument', 'Instrument informations of the run')
-	#	Group : instrument/subarray
-	subarrayGroup = hfile.create_group("/instrument", 'subarray', 'Subarray of the run')
-	hfile.create_table(subarrayGroup, 'layout', SubarrayLayout, "Layout of the subarray")
-	#		Group : instrument/subarray/telescope
-	subarrayTelescopeGroup = hfile.create_group("/instrument/subarray", 'telescope', 'Telescope of the subarray')
-	
-	#			Group : instrument/subarray/telescope/camera
-	hfile.create_group("/instrument/subarray/telescope", 'camera', 'Camera in the run')
+	"""
+	# Group: configuration
+	hfile.create_group('/', 'configuration', 'Simulation, telescope and subarray configuration.')
+	# Group : configuration/instrument
+	hfile.create_group('/configuration', 'instrument', 'Instrument informations of the run')
+	# Group : configuration/instrument/subarray
+	subarray_group = hfile.create_group('/configuration/instrument', 'subarray', 'Subarray of the run')
+	# Group : configuration/instrument/subarray/telescope
+	telescope_group = hfile.create_group('/configuration/instrument', 'telescope', 'Telescope of the subarray')
+	hfile.create_table(subarray_group, 'layout', SubarrayLayout, "Layout of the subarray")
+	# Group : configuration/instrument/subarray/telescope/camera
+	hfile.create_group("/configuration/instrument/subarray/telescope", 'camera', 'Cameras in the run')
 	
 	for telId, telInfo in telInfo_from_evt.items():
-		createCameraTable(hfile, telId, telInfo)
+		create_camera_table(hfile, telInfo)
 	
-	hfile.create_table(subarrayTelescopeGroup, 'optics', OpticDescription, "Describe the optic of the all the telescopes")
+	hfile.create_table(telescope_group, 'optics', OpticDescription, "Describe the optic of the all the telescopes")
 
 
-def fillOpticDescription(hfile, telInfo_from_evt, nbTel):
+def fill_optic_description(hfile, telInfo_from_evt, nbTel):
 	'''
 	Fill the optic description table
 	Parameters:
@@ -178,16 +192,18 @@ def fillOpticDescription(hfile, telInfo_from_evt, nbTel):
 			telInfo = telInfo_from_evt[telId]
 			telType = telInfo[TELINFO_TELTYPE]
 			
-			camName = getCameraNameFromType(telType)
+			camera_name = getCameraNameFromType(telType)
 			telTypeStr = getTelescopeTypeStrFromCameraType(telType)
 			
 			tabOp["description"] = "Description"
-			tabOp["name"] = camName
+			tabOp["name"] = camera_name
 			tabOp["type"] = telTypeStr
 			tabOp["mirror_area"] = np.float32(telInfo[TELINFO_MIRRORAREA])
 			tabOp["num_mirrors"] = np.float32(telInfo[TELINFO_NBMIRROR])
 			tabOp["num_mirror_tiles"] = np.float32(telInfo[TELINFO_NBMIRRORTILES])
 			tabOp["equivalent_focal_length"] = np.float32(telInfo[TELINFO_FOCLEN])
+			tabOp["cam_rotation"] = np.float32(telInfo[TEL_INFOR_CAMERA_ROTATION])
+			tabOp["pix_rotation"] = np.float32(telInfo[TEL_INFOR_PIX_ROTATION])
 			tabOp.append()
 		else:
 			tabOp["description"] = ""
@@ -197,6 +213,8 @@ def fillOpticDescription(hfile, telInfo_from_evt, nbTel):
 			tabOp["num_mirrors"] = np.float32(0.0)
 			tabOp["num_mirror_tiles"] = np.float32(0.0)
 			tabOp["equivalent_focal_length"] = np.float32(1.0)
+			tabOp["cam_rotation"] = np.float32(0.0)
+			tabOp["pix_rotation"] = np.float32(0.0)
 			tabOp.append()
 
 
