@@ -163,14 +163,15 @@ def create_simulation_dataset(hfile):
 	-------
 		table of the mc_event
 	'''
-	simulation_group = hfile.create_group('/', 'simulation', 'Simulation information of the run')
+	hfile.create_group('/', 'simulation', 'Simulation information of the run')
 	service_group = hfile.create_group('/simulation', 'service', 'Service simulation')
 	hfile.create_table(service_group, 'shower_distribution', ShowerDistribution, 'Distribution of the simulated events')
 
 	# configuration group already created in `instrument_utils.py`
 	config_sim_group = hfile.create_group('/configuration', 'simulation', 'Configuration simulation information of the run')
 	hfile.create_table(config_sim_group, 'run', RunConfigEvent, "Configuration of the simulated events", expectedrows=1)
-	event_group = hfile.create_group('/simulation', 'event', 'Event simulation')
+
+	hfile.create_group('/simulation', 'event', 'Event simulation')
 	sim_event_subarray_group = hfile.create_group('/simulation/event', 'subarray', 'Subarray shower')
 	table_mc_event = hfile.create_table(sim_event_subarray_group, 'shower', MCEvent, "All simulated Corsika events")
 	return table_mc_event
