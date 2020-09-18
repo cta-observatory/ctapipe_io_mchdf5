@@ -61,12 +61,12 @@ def getTelescopeInfoFromEvent(inputFileName, max_nb_tel):
 				posTelZ = np.asarray(source.subarray.tel_coords.z, dtype=np.float32)
 			for tel_id in evt.r0.tels_with_data:
 				if not tel_id in telescope_info:
-					ref_shape = evt.mc.tel[tel_id].reference_pulse_shape
+					ref_shape = source.subarray.tel[tel_id].camera.readout.reference_pulse_shape
 					nb_slice = evt.r0.tel[tel_id].waveform.shape[2]
 					nbGain = evt.r0.tel[tel_id].waveform.shape[0]
 					nbPixel = evt.r0.tel[tel_id].waveform.shape[1]
 					ped = evt.mc.tel[tel_id].pedestal
-					gain =  evt.mc.tel[tel_id].dc_to_pe
+					gain = evt.mc.tel[tel_id].dc_to_pe
 					cameraRotation = source.subarray.tel[tel_id].camera.pix_rotation
 					pixRotation = source.subarray.tel[tel_id].camera.cam_rotation
 					
