@@ -139,7 +139,7 @@ def create_mon_tel_pedestal(hfile, telInfo, nb_gain, nb_pixel):
 		tabPedForEntry = tablePedestal.row
 		tabPedForEntry["first_event_id"] = np.uint64(0)
 		tabPedForEntry["last_event_id"] = np.uint64(1)
-		tabPedForEntry["pedestal"] = tabPed
+		tabPedForEntry["pedestal"] = tabPed.T
 		tabPedForEntry.append()
 		tablePedestal.flush()
 
