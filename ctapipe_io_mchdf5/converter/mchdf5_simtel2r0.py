@@ -12,11 +12,16 @@ from ctapipe.io import event_source
 import argparse
 
 from ..tools.get_nb_tel import getNbTel
-from ..tools.r0_file import *
-from ..tools.r0_utils import create_r0_dataset
-from ..tools.get_telescope_info import *
-from ..tools.simulation_utils import create_simulation_dataset
-from ..tools.instrument_utils import create_instrument_dataset
+from ..tools.r0_file import (create_file_structure,
+							 open_output_file)
+from ..tools.r0_utils import (append_event_telescope_data,
+							  flush_r0_tables)
+from ..tools.get_telescope_info import (getTelescopeInfoFromEvent,
+										checkIsSimulationFile)
+from ..tools.simulation_utils import (append_corsika_event,
+									  fill_simulation_header_info)
+from ..tools.instrument_utils import (fill_subarray_layout,
+									  fill_optic_description)
 
 
 def main():
@@ -79,7 +84,7 @@ def main():
 	if isSimulationMode:
 		tableMcCorsikaEvent.flush()
 		
-	flush_R0_tables(hfile)
+	flush_r0_tables(hfile)
 	hfile.close()
 	print('\nDone')
 

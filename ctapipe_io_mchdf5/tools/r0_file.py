@@ -7,9 +7,9 @@
 
 import tables
 
-from .simulation_utils import *
-from .instrument_utils import *
-from .r0_utils import *
+from .simulation_utils import create_simulation_dataset
+from .instrument_utils import create_instrument_dataset
+from .r0_utils import create_r0_dataset
 
 
 def open_output_file(fileName, compressionLevel=0):

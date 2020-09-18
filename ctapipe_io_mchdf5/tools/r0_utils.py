@@ -389,7 +389,7 @@ def append_event_telescope_data(hfile, event):
 		append_photo_electron_image_in_telescope(tel_pe_image_table, photo_electron_image, event.r0.event_id)
 
 
-def flush_R0_tables(hfile):
+def flush_r0_tables(hfile):
 	'''
 	Flush all the R0 tables
 	Parameters:
