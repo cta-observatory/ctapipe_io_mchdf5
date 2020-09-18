@@ -146,35 +146,38 @@ def create_camera_table(hfile, telInfo):
 	pix_id = np.arange(0, pix_y.size, dtype=np.uint64)
 	pix_area = np.zeros(pix_y.size, dtype=np.float32)
 
-	# TODO create try cath with the correct expcetion -  we don't know which is it
-	camera_telescope_table = hfile.create_table("/configuration/instrument/telescope/camera", geometry_camera_name,
-												CameraGeometry, "Geometry of " + camera_name)
+	try:
+		camera_telescope_table = hfile.create_table("/configuration/instrument/telescope/camera", geometry_camera_name,
+													CameraGeometry, "Geometry of " + camera_name)
 
-	camera_tel_row = camera_telescope_table.row
-	for item in zip(pix_x, pix_y, pix_id, pix_area):
-		camera_tel_row["pix_x"] = item[0]
-		camera_tel_row["pix_y"] = item[1]
-		camera_tel_row["pix_id"] = item[2]
-		camera_tel_row["pix_area"] = item[3]
+		camera_tel_row = camera_telescope_table.row
+		for item in zip(pix_x, pix_y, pix_id, pix_area):
+			camera_tel_row["pix_x"] = item[0]
+			camera_tel_row["pix_y"] = item[1]
+			camera_tel_row["pix_id"] = item[2]
+			camera_tel_row["pix_area"] = item[3]
 
-		camera_tel_row.append()
+			camera_tel_row.append()
 
-	info_ref_shape = telInfo[TELINFO_REFSHAPE]
-	if info_ref_shape is not None:
-		camera_readout_table = hfile.create_table("/configuration/instrument/telescope/camera", readout_camera_name,
-											  CameraReadOut, "Reference shape of " + camera_name)
-		camera_readout_table_row = camera_readout_table.row
+		info_ref_shape = telInfo[TELINFO_REFSHAPE]
+		if info_ref_shape is not None:
+			camera_readout_table = hfile.create_table("/configuration/instrument/telescope/camera", readout_camera_name,
+												  CameraReadOut, "Reference shape of " + camera_name)
+			camera_readout_table_row = camera_readout_table.row
 
-		tab_ref_shape = np.asarray(info_ref_shape, dtype=np.float32)
-		nb_sample = np.uint64(tab_ref_shape.shape[1])  # in cols
+			tab_ref_shape = np.asarray(info_ref_shape, dtype=np.float32)
+			nb_sample = np.uint64(tab_ref_shape.shape[1])  # in cols
 
-		for i in range(nb_sample):
-			camera_readout_table_row['reference_pulse_shape_channel0'] = np.float32(tab_ref_shape[i, 0])
-			camera_readout_table_row['reference_pulse_sample_time'] = np.float32(float(i)/float(nb_sample))
-			if telInfo[TELINFO_NBGAIN] == 2:
-				camera_readout_table_row['reference_pulse_shape_channel1'] = np.float32(tab_ref_shape[i, 1])
+			for i in range(nb_sample):
+				camera_readout_table_row['reference_pulse_shape_channel0'] = np.float32(tab_ref_shape[i, 0])
+				camera_readout_table_row['reference_pulse_sample_time'] = np.float32(float(i)/float(nb_sample))
+				if telInfo[TELINFO_NBGAIN] == 2:
+					camera_readout_table_row['reference_pulse_shape_channel1'] = np.float32(tab_ref_shape[i, 1])
 
-			camera_readout_table_row.append()
+				camera_readout_table_row.append()
+
+	except tables.exceptions.NodeError:
+		pass
 
 
 def create_instrument_dataset(hfile, telInfo_from_evt):

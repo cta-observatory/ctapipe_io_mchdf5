@@ -98,7 +98,7 @@ def create_event_tel_waveform(hfile, tel_node, nb_gain, image_shape, telId, chun
 					   "Table of waveform of the high gain signal", chunkshape=chunkshape)
 
 
-def create_table_pedestal(hfile, cam_tel_group, nbGain, nbPixel):
+def create_table_pedestal(hfile, cam_tel_group, nbGain, nbPixel, telId):
 	'''
 	Create the pedestal description of the telescope
 	Parameters:
@@ -106,6 +106,7 @@ def create_table_pedestal(hfile, cam_tel_group, nbGain, nbPixel):
 		cam_tel_group : camera node to be used
 		nbGain : number of gain of the camera
 		nbPixel : number of pixel of the camera
+		telId :
 	Return:
 		table of the pedestal of the telescope
 	'''
@@ -116,12 +117,12 @@ def create_table_pedestal(hfile, cam_tel_group, nbGain, nbPixel):
 		"pedestal": tables.Float32Col(shape=ped_shape)
 	}
 	description_pedestal = type('description columns_dict_pedestal', (tables.IsDescription,), columns_dict_pedestal)
-	table_pedestal = hfile.create_table(cam_tel_group, 'pedestal', description_pedestal,
+	table_pedestal = hfile.create_table(cam_tel_group, 'tel_{0:0=3d}'.format(telId), description_pedestal,
 										"Table of the pedestal for high and low gain", expectedrows=1, chunkshape=1)
 	return table_pedestal
 
 
-def create_mon_tel_pedestal(hfile, telInfo, nb_gain, nb_pixel):
+def create_mon_tel_pedestal(hfile, telInfo, nb_gain, nb_pixel, telId):
 	"""
 	Create the r0/monitoring/telescope/pedestal table information for a single telescope
 	Parameters:
@@ -129,11 +130,12 @@ def create_mon_tel_pedestal(hfile, telInfo, nb_gain, nb_pixel):
 		telInfo:
 		nb_gain:
 		nb_pixel:
+		telId:
 	"""
 	info_tab_ped = telInfo[TELINFO_PEDESTAL]
 	tabPed = np.asarray(info_tab_ped, dtype=np.float32)
 
-	tablePedestal = create_table_pedestal(hfile, hfile.root.r0.monitoring.telescope.pedestal, nb_gain, nb_pixel)
+	tablePedestal = create_table_pedestal(hfile, hfile.root.r0.monitoring.telescope.pedestal, nb_gain, nb_pixel, telId)
 
 	if info_tab_ped is not None:
 		tabPedForEntry = tablePedestal.row
@@ -244,7 +246,7 @@ def create_tel_group_and_table(hfile, telId, telInfo, chunkshape=1):
 
 	create_mon_tel_pointing(hfile, telId, nb_pixel, chunkshape=chunkshape)
 
-	create_mon_tel_pedestal(hfile, telInfo, nb_pixel, nb_gain)
+	create_mon_tel_pedestal(hfile, telInfo, nb_pixel, nb_gain, telId)
 	create_mon_tel_gain(hfile, telInfo)
 	create_mon_tel_info(hfile, telId, telInfo, nb_pixel, nb_gain, nb_slice)
 
