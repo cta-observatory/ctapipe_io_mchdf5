@@ -12,7 +12,7 @@ from .instrument_utils import *
 from .r0_utils import *
 
 
-def openOutputFile(fileName, compressionLevel=0):
+def open_output_file(fileName, compressionLevel=0):
 	'''
 	Open the output HDF5 file to be used
 	Parameters:
@@ -21,16 +21,16 @@ def openOutputFile(fileName, compressionLevel=0):
 	'''
 	if compressionLevel == 0:
 		hfile = tables.open_file(fileName, mode = "w")
-		hfile.title = "R1-V2"
+		hfile.title = "R0-V2"
 		return hfile
 	else:
 		zstdFilter = tables.Filters(complevel=compressionLevel, complib='blosc:zstd', shuffle=False, bitshuffle=False, fletcher32=False)
 		hfile = tables.open_file(fileName, mode = "w", filters=zstdFilter)
-		hfile.title = "R1-V2"
+		hfile.title = "R0-V2"
 		return hfile
 	
 
-def createFileStructure(hfile, telInfo_from_evt, enableSimulation=True):
+def create_file_structure(hfile, telInfo_from_evt, enableSimulation=True):
 	'''
 	Create the structure of the HDF5 file
 	Parameters:

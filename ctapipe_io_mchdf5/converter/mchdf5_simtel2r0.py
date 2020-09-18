@@ -19,23 +19,6 @@ from ..tools.simulation_utils import create_simulation_dataset
 from ..tools.instrument_utils import create_instrument_dataset
 
 
-def create_file_structure(hfile, telInfo_from_evt):
-	'''
-	Create the structure of the HDF5 file
-	Parameters:
-	-----------
-		hfile : HDF5 file to be used
-		telInfo_from_evt : information of telescopes
-	Return:
-	-------
-		table of mc_event
-	'''
-	create_r0_dataset(hfile, telInfo_from_evt)
-	create_instrument_dataset(hfile, telInfo_from_evt)
-	tableMcEvent = create_simulation_dataset(hfile)
-	return tableMcEvent
-
-
 def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-i', '--input', help="simtel input file",
@@ -58,7 +41,7 @@ def main():
 	
 	telInfo_from_evt, nbEvent = getTelescopeInfoFromEvent(inputFileName, nbTel)
 	print("Found", nbEvent, "events")
-	hfile = openOutputFile(args.output, compressionLevel=args.compression)
+	hfile = open_output_file(args.output, compressionLevel=args.compression)
 	
 	print('Create file structure')
 	tableMcCorsikaEvent = create_file_structure(hfile, telInfo_from_evt)
@@ -87,7 +70,7 @@ def main():
 	for event in source:
 		if isSimulationMode:
 			append_corsika_event(tableMcCorsikaEvent, event)
-		appendEventTelescopeData(hfile, event)
+		append_event_telescope_data(hfile, event)
 		nb_event += 1
 		print("\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r{} / {}".format(nb_event, max_event), end="")
 		if nb_event >= max_event:
@@ -96,7 +79,7 @@ def main():
 	if isSimulationMode:
 		tableMcCorsikaEvent.flush()
 		
-	flushR1Tables(hfile)
+	flush_R0_tables(hfile)
 	hfile.close()
 	print('\nDone')
 

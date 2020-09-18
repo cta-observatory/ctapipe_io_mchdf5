@@ -86,10 +86,12 @@ def create_event_tel_waveform(hfile, tel_node, nb_gain, image_shape, telId, chun
 		chunkshape : shape of the chunk to be used to store the data
 	'''
 	if nb_gain > 1:
-		columns_dict_waveform = {"waveformHi": tables.UInt16Col(shape=image_shape),
+		columns_dict_waveform = {'event_id': tables.UInt64Col(),
+								 "waveformHi": tables.UInt16Col(shape=image_shape),
 								 "waveformLo": tables.UInt16Col(shape=image_shape)}
 	else:
-		columns_dict_waveform = {"waveformHi": tables.UInt16Col(shape=image_shape)}
+		columns_dict_waveform = {'event_id': tables.UInt64Col(),
+								 "waveformHi": tables.UInt16Col(shape=image_shape)}
 
 	description_waveform = type('description columns_dict_waveform', (tables.IsDescription,), columns_dict_waveform)
 	hfile.create_table(tel_node, 'tel_{0:0=3d}'.format(telId), description_waveform,
@@ -109,14 +111,14 @@ def create_table_pedestal(hfile, cam_tel_group, nbGain, nbPixel):
 	'''
 	ped_shape = (nbGain, nbPixel)
 	columns_dict_pedestal = {
-		"first_event_id" :  tables.UInt64Col(),
-		"last_event_id" :  tables.UInt64Col(),
-		"pedestal" :  tables.Float32Col(shape=ped_shape)
+		"first_event_id":  tables.UInt64Col(),
+		"last_event_id":  tables.UInt64Col(),
+		"pedestal": tables.Float32Col(shape=ped_shape)
 	}
 	description_pedestal = type('description columns_dict_pedestal', (tables.IsDescription,), columns_dict_pedestal)
-	tablePedestal = hfile.create_table(cam_tel_group, 'pedestal', description_pedestal,
-									   "Table of the pedestal for high and low gain", expectedrows=1, chunkshape=1)
-	return tablePedestal
+	table_pedestal = hfile.create_table(cam_tel_group, 'pedestal', description_pedestal,
+										"Table of the pedestal for high and low gain", expectedrows=1, chunkshape=1)
+	return table_pedestal
 
 
 def create_mon_tel_pedestal(hfile, telInfo, nb_gain, nb_pixel):
@@ -209,7 +211,8 @@ def create_mon_tel_pointing(hfile, telId, nb_pixel, chunkshape=1):
 	cam_tel_table_row['azimuth'] = np.float32(0)  # TODO find where this info comes from
 	cam_tel_table_row['altitude'] = np.float32(0)  # TODO find where this info comes from
 
-	columns_dict_photo_electron_image = {"photo_electron_image": tables.Float32Col(shape=nb_pixel)}
+	columns_dict_photo_electron_image = {'event_id': tables.UInt64Col(),
+										 "photo_electron_image": tables.Float32Col(shape=nb_pixel)}
 	description_photo_electron_image = type('description columns_dict_photo_electron_image', (tables.IsDescription,),
 											columns_dict_photo_electron_image)
 	hfile.create_table(hfile.root.r0.event.telescope.photo_electron_image, 'tel_{0:0=3d}'.format(telId),
@@ -319,46 +322,43 @@ def create_r0_dataset(hfile, telInfo_from_evt):
 		create_tel_group_and_table(hfile, telId, telInfo)
 
 
-def appendWaveformInTelescope(telNode, waveform, photo_electron_image, eventId, timeStamp):
+def append_photo_electron_image_in_telescope(tel_pe_table, pe_image, eventId):
+	"""
+	Append the photo electron image into a telescope node
+	Parameters :
+		tel_pe_table:
+		pe_image:
+		eventId : id of the corresponding event
+	"""
+	tel_pe_table_row = tel_pe_table.row
+	tel_pe_table_row['event_id'] = eventId
+	tel_pe_table_row['photon_electron_image'] = pe_image
+
+	tel_pe_table.append()
+
+
+def append_waveform_in_telescope(tel_wf_table, waveform, eventId):
 	'''
 	Append a waveform signal (to be transposed) into a telescope node
 	-------------------
 	Parameters :
-		telNode : telescope node to be used
+		tel_wf_table : telescope waveform table to be used
 		waveform : waveform signal to be used
-		photo_electron_image : image of the pixel with signal (without noise)
 		eventId : id of the corresponding event
-		timeStamp : time of the event in UTC
 	'''
-	tabtrigger = telNode.trigger.row
-	tabtrigger['event_id'] = eventId
+	tel_wf_table_row = tel_wf_table.row
+	tel_wf_table_row['event_id'] = eventId
 
-
-	#TODO : use the proper convertion from timeStamp to the time in second and nanosecond
-	if isinstance(timeStamp, numbers.Number):
-		timeSecond = int(timeStamp)
-		timeMicroSec = timeStamp - timeSecond
-		tabtrigger['time_s'] = timeSecond
-		tabtrigger['time_qns'] = timeMicroSec
-	tabtrigger.append()
-
-	tabWaveformHi = telNode.waveformHi.row
-	tabWaveformHi['waveformHi'] = waveform[0].swapaxes(0, 1)
-	tabWaveformHi.append()
+	tel_wf_table_row['waveformHi'] = waveform[0].swapaxes(0, 1)
+	tel_wf_table_row.append()
 
 	if waveform.shape[0] > 1:
-		tabWaveformLo = telNode.waveformLo.row
-		tabWaveformLo['waveformLo'] = waveform[1].swapaxes(0, 1)
-		tabWaveformLo.append()
+		tel_wf_table_row['waveformLo'] = waveform[1].swapaxes(0, 1)
 
-	if photo_electron_image is not None and isinstance(photo_electron_image, list):
-		tabPhotoElectronImage = telNode.photo_electron_image.row
-		tabPhotoElectronImage["photo_electron_image"] = photo_electron_image
-		tabPhotoElectronImage.append()
+	tel_wf_table_row.append()
 
 
-
-def appendEventTelescopeData(hfile, event):
+def append_event_telescope_data(hfile, event):
 	'''
 	Append data from event in telescopes
 	--------------
@@ -366,22 +366,36 @@ def appendEventTelescopeData(hfile, event):
 		hfile : HDF5 file to be used
 		event : current event
 	'''
-	tabTelWithData = event.r0.tels_with_data
+	tab_tel_with_data = event.r0.tels_with_data
+	event_subarray_tel_w_trigger_row = hfile.root.r0.event.subarray.tels_with_trigger.row
+	event_subarray_tel_w_trigger_row.append(tab_tel_with_data)
+
+	event_subarray_trigger_row = hfile.root.r0.event.subarray.trigger.row
+	event_subarray_trigger_row['event_id'] = event.index.event_id
+	event_subarray_trigger_row['time'] = event.trigger.time.value
+	event_subarray_trigger_row['event_type'] = event.trigger.event_type.value
+	event_subarray_trigger_row['obs_id'] = event.index.obs_id
+
+	event_subarray_trigger_row.append()
+
 	dicoTel = event.r0.tel
-	for telId in tabTelWithData:
+	for telId in tab_tel_with_data:
 		waveform = dicoTel[telId].waveform
-		telNode = hfile.get_node("/r1", 'Tel_' + str(telId))
+		tel_waveform_table = hfile.get_node("/r0/event/telescope/waveform", 'tel_{0:0=3d}'.format(telId))
+		tel_pe_image_table = hfile.get_node('/r0/event/telescope/photon_electron_image', 'tel_{0:0=3d}'.format(telId))
 		photo_electron_image = event.mc.tel[telId].photo_electron_image
-		appendWaveformInTelescope(telNode, waveform, photo_electron_image, event.r0.event_id, event.trig.gps_time.value)
+
+		append_waveform_in_telescope(tel_waveform_table, waveform, event.r0.event_id)
+		append_photo_electron_image_in_telescope(tel_pe_image_table, photo_electron_image, event.r0.event_id)
 
 
-def flushR1Tables(hfile):
+def flush_R0_tables(hfile):
 	'''
-	Flush all the R1 tables
+	Flush all the R0 tables
 	Parameters:
 		hfile : file to be used
 	'''
-	for telNode in hfile.walk_nodes("/r1", "Group"):
+	for telNode in hfile.walk_nodes("/r0", "Group"):
 		try:
 			nbGain = np.uint64(telNode.nbGain.read())
 			telNode.photo_electron_image.flush()
@@ -390,4 +404,3 @@ def flushR1Tables(hfile):
 				telNode.waveformLo.flush()
 		except Exception as e:
 			pass
-
