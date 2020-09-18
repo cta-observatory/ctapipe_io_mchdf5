@@ -55,10 +55,10 @@ def getTelescopeInfoFromEvent(inputFileName, max_nb_tel):
 		for evt in source:
 			nbEvent += 1
 			if dicoTelInfo is None:
-				dicoTelInfo = evt.inst.subarray.tel
-				posTelX = np.asarray(evt.inst.subarray.tel_coords.x, dtype=np.float32)
-				posTelY = np.asarray(evt.inst.subarray.tel_coords.y, dtype=np.float32)
-				posTelZ = np.asarray(evt.inst.subarray.tel_coords.z, dtype=np.float32)
+				dicoTelInfo = source.subarray.tel
+				posTelX = np.asarray(source.subarray.tel_coords.x, dtype=np.float32)
+				posTelY = np.asarray(source.subarray.tel_coords.y, dtype=np.float32)
+				posTelZ = np.asarray(source.subarray.tel_coords.z, dtype=np.float32)
 			for tel_id in evt.r0.tels_with_data:
 				if not tel_id in telescope_info:
 					ref_shape = evt.mc.tel[tel_id].reference_pulse_shape
@@ -67,8 +67,8 @@ def getTelescopeInfoFromEvent(inputFileName, max_nb_tel):
 					nbPixel = evt.r0.tel[tel_id].waveform.shape[1]
 					ped = evt.mc.tel[tel_id].pedestal
 					gain =  evt.mc.tel[tel_id].dc_to_pe
-					cameraRotation = evt.inst.subarray.tel[tel_id].camera.pix_rotation
-					pixRotation = evt.inst.subarray.tel[tel_id].camera.cam_rotation
+					cameraRotation = source.subarray.tel[tel_id].camera.pix_rotation
+					pixRotation = source.subarray.tel[tel_id].camera.cam_rotation
 					
 					telInfo = dicoTelInfo[tel_id]
 					telType = np.uint64(get_camera_type_from_name(telInfo.camera.cam_id))
