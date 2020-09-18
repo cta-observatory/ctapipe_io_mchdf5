@@ -74,8 +74,8 @@ def getTelescopeInfoFromEvent(inputFileName, max_nb_tel):
 					telType = np.uint64(get_camera_type_from_name(telInfo.camera.camera_name))
 					focalLen = np.float32(telInfo.optics.equivalent_focal_length.value)
 					
-					tabPixelX = np.asarray(telInfo.camera.pix_x, dtype=np.float32)
-					tabPixelY = np.asarray(telInfo.camera.pix_y, dtype=np.float32)
+					tabPixelX = np.asarray(telInfo.camera.geometry.pix_x.value, dtype=np.float32)
+					tabPixelY = np.asarray(telInfo.camera.geometry.pix_y.value, dtype=np.float32)
 					
 					nbMirror = np.uint64(telInfo.optics.num_mirrors)
 					nbMirrorTiles = np.uint64(telInfo.optics.num_mirror_tiles)
