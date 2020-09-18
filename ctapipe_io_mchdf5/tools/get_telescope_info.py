@@ -67,8 +67,8 @@ def getTelescopeInfoFromEvent(inputFileName, max_nb_tel):
 					nbPixel = evt.r0.tel[tel_id].waveform.shape[1]
 					ped = evt.mc.tel[tel_id].pedestal
 					gain = evt.mc.tel[tel_id].dc_to_pe
-					cameraRotation = source.subarray.tel[tel_id].camera.pix_rotation
-					pixRotation = source.subarray.tel[tel_id].camera.cam_rotation
+					cameraRotation = source.subarray.tel[tel_id].camera.geometry.pix_rotation.value
+					pixRotation = source.subarray.tel[tel_id].camera.geometry.cam_rotation.value
 					
 					telInfo = dicoTelInfo[tel_id]
 					telType = np.uint64(get_camera_type_from_name(telInfo.camera.cam_id))
