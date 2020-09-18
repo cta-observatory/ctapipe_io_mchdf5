@@ -10,12 +10,12 @@ import numpy as np
 from .telescope_copy import copyTelescopeWithoutWaveform
 
 
-def createSortedWaveformTable(hfile, camTelGroup, nameWaveformHi, nbSlice, nbPixel, isStoreSlicePixel, chunkshape=1):
+def createSortedWaveformTable(hfile, cam_tel_group, nameWaveformHi, nbSlice, nbPixel, isStoreSlicePixel, chunkshape=1):
 	'''
 	Create the table to store the signal
 	Parameters:
 		hfile : HDF5 file to be used
-		camTelGroup : telescope group in which to put the tables
+		cam_tel_group : telescope group in which to put the tables
 		nameWaveformHi : name of the table to store the waveform
 		nbSlice : number of slices of the signal
 		nbPixel : number of pixels of the camera
@@ -27,7 +27,7 @@ def createSortedWaveformTable(hfile, camTelGroup, nameWaveformHi, nbSlice, nbPix
 		image_shape = (nbSlice, nbPixel)
 	columns_dict_waveformHi  = {nameWaveformHi: tables.UInt16Col(shape=image_shape)}
 	description_waveformHi = type('description columns_dict_waveformHi', (tables.IsDescription,), columns_dict_waveformHi)
-	hfile.create_table(camTelGroup, nameWaveformHi, description_waveformHi, "Table of waveform of the signal", chunkshape=chunkshape)
+	hfile.create_table(cam_tel_group, nameWaveformHi, description_waveformHi, "Table of waveform of the signal", chunkshape=chunkshape)
 
 
 def createTelescopeSorted(outFile, telNode, isStoreSlicePixel, chunkshape=1):
@@ -40,15 +40,15 @@ def createTelescopeSorted(outFile, telNode, isStoreSlicePixel, chunkshape=1):
 		isStoreSlicePixel : true to store data per slice and pixel, false for pixel and slice
 		chunkshape : shape of the chunk to be used to store the data of waveform and minimum
 	'''
-	camTelGroup = copyTelescopeWithoutWaveform(outFile, telNode, chunkshape)
+	cam_tel_group = copyTelescopeWithoutWaveform(outFile, telNode, chunkshape)
 	
 	nbPixel = np.uint64(telNode.nbPixel.read())
 	nbSlice = np.uint64(telNode.nbSlice.read())
 	
-	createSortedWaveformTable(outFile, camTelGroup, "waveformHi", nbSlice, nbPixel, isStoreSlicePixel, chunkshape=chunkshape)
+	createSortedWaveformTable(outFile, cam_tel_group, "waveformHi", nbSlice, nbPixel, isStoreSlicePixel, chunkshape=chunkshape)
 	nbGain = np.uint64(telNode.nbGain.read())
 	if nbGain > 1:
-		createSortedWaveformTable(outFile, camTelGroup, "waveformLo", nbSlice, nbPixel, isStoreSlicePixel, chunkshape=chunkshape)
+		createSortedWaveformTable(outFile, cam_tel_group, "waveformLo", nbSlice, nbPixel, isStoreSlicePixel, chunkshape=chunkshape)
 
 
 def createAllTelescopeSorted(outFile, inFile, isStoreSlicePixel, chunkshape=1):
@@ -69,12 +69,12 @@ def createAllTelescopeSorted(outFile, inFile, isStoreSlicePixel, chunkshape=1):
 			pass
 
 
-def createSortedWaveformTableShape(hfile, camTelGroup, nameWaveformHi, dataEntryShape, chunkshape=1):
+def createSortedWaveformTableShape(hfile, cam_tel_group, nameWaveformHi, dataEntryShape, chunkshape=1):
 	'''
 	Create the table to store the signal
 	Parameters:
 		hfile : HDF5 file to be used
-		camTelGroup : telescope group in which to put the tables
+		cam_tel_group : telescope group in which to put the tables
 		nameWaveformHi : name of the table to store the waveform
 		dataEntryShape : shape of the entries to be stored
 		chunkshape : shape of the chunk to be used to store the data of waveform and minimum
@@ -83,7 +83,7 @@ def createSortedWaveformTableShape(hfile, camTelGroup, nameWaveformHi, dataEntry
 	'''
 	columns_dict_waveformHi  = {nameWaveformHi: tables.UInt16Col(shape=dataEntryShape)}
 	description_waveformHi = type('description columns_dict_waveformHi', (tables.IsDescription,), columns_dict_waveformHi)
-	return hfile.create_table(camTelGroup, nameWaveformHi, description_waveformHi, "Table of waveform of the signal", chunkshape=chunkshape)
+	return hfile.create_table(cam_tel_group, nameWaveformHi, description_waveformHi, "Table of waveform of the signal", chunkshape=chunkshape)
 
 
 

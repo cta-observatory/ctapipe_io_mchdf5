@@ -10,12 +10,12 @@ import argparse
 
 from ctapipe_io_mchdf5.tools.telescope_copy import copyTelescopeWithoutWaveform
 
-def createSortedWaveformTable(hfile, camTelGroup, nameWaveformHi, nbSlice, nbPixel, chunkshape=1):
+def createSortedWaveformTable(hfile, cam_tel_group, nameWaveformHi, nbSlice, nbPixel, chunkshape=1):
 	'''
 	Create the table to store the signal
 	Parameters:
 		hfile : HDF5 file to be used
-		camTelGroup : telescope group in which to put the tables
+		cam_tel_group : telescope group in which to put the tables
 		nameWaveformHi : name of the table to store the waveform
 		nbSlice : number of slices of the signal
 		nbPixel : number of pixels of the camera
@@ -24,7 +24,7 @@ def createSortedWaveformTable(hfile, camTelGroup, nameWaveformHi, nbSlice, nbPix
 	image_shape = (nbSlice, nbPixel)
 	columns_dict_waveformHi  = {nameWaveformHi: tables.UInt16Col(shape=image_shape)}
 	description_waveformHi = type('description columns_dict_waveformHi', (tables.IsDescription,), columns_dict_waveformHi)
-	hfile.create_table(camTelGroup, nameWaveformHi, description_waveformHi, "Table of waveform of the signal", chunkshape=chunkshape)
+	hfile.create_table(cam_tel_group, nameWaveformHi, description_waveformHi, "Table of waveform of the signal", chunkshape=chunkshape)
 
 
 def createTelescopeSorted(outFile, telNode, chunkshape=1):
@@ -36,15 +36,15 @@ def createTelescopeSorted(outFile, telNode, chunkshape=1):
 		telNode : telescope node to be copied
 		chunkshape : shape of the chunk to be used to store the data of waveform and minimum
 	'''
-	camTelGroup = copyTelescopeWithoutWaveform(outFile, telNode, chunkshape)
+	cam_tel_group = copyTelescopeWithoutWaveform(outFile, telNode, chunkshape)
 	
 	nbPixel = np.uint64(telNode.nbPixel.read())
 	nbSlice = np.uint64(telNode.nbSlice.read())
 	
-	createSortedWaveformTable(outFile, camTelGroup, "waveformHi", nbSlice, nbPixel, chunkshape=chunkshape)
+	createSortedWaveformTable(outFile, cam_tel_group, "waveformHi", nbSlice, nbPixel, chunkshape=chunkshape)
 	nbGain = np.uint64(telNode.nbGain.read())
 	if nbGain > 1:
-		createSortedWaveformTable(outFile, camTelGroup, "waveformLo", nbSlice, nbPixel, chunkshape=chunkshape)
+		createSortedWaveformTable(outFile, cam_tel_group, "waveformLo", nbSlice, nbPixel, chunkshape=chunkshape)
 
 
 def createAllTelescopeSorted(outFile, inFile, chunkshape=1):

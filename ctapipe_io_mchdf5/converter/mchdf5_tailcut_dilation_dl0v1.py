@@ -14,7 +14,7 @@ import tables
 import hipecta.hdf5_utils as hdu
 import hipecta.pixelselection as pixselec
 import hipecta.core as core
-from ctapipe_io_mchdf5.tools import copyAllTelWithoutWaveform, createWaveformTel
+from ctapipe_io_mchdf5.tools import copyAllTelWithoutWaveform, create_event_tel_waveform
 
 
 def computeSelectionTailCutDilation(fileOut, telNodeOut, telNodeIn, tabFocalTel, nbGain, center=4, neighbours=2,
@@ -113,7 +113,7 @@ def tailcutDilationSelectionTel(fileOut, telNodeOut, telNodeIn, tabFocalTel, cen
     image_shape = (nbSlice, nbPixel)
 
     nbGain = np.uint64(telNodeOut.nbGain.read())
-    createWaveformTel(fileOut, telNodeOut, nbGain, image_shape)
+    create_event_tel_waveform(fileOut, telNodeOut, nbGain, image_shape)
 
     computeSelectionTailCutDilation(fileOut, telNodeOut, telNodeIn, tabFocalTel, nbGain, center, neighbours,
                                     min_number_picture_neighbors, dilation)

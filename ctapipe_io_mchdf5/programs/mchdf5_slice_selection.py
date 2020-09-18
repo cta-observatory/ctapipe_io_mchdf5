@@ -11,12 +11,12 @@ import argparse
 
 from ctapipe_io_mchdf5.tools.telescope_copy import copyTelescopeWithoutWaveform
 
-def createMWaveformTable(hfile, camTelGroup, nameWaveformHi, nbSlice, nbPixel, chunkshape=1):
+def createMWaveformTable(hfile, cam_tel_group, nameWaveformHi, nbSlice, nbPixel, chunkshape=1):
 	'''
 	Create the table to store the signal without the minimum value and it minimum in an other table
 	Parameters:
 		hfile : HDF5 file to be used
-		camTelGroup : telescope group in which to put the tables
+		cam_tel_group : telescope group in which to put the tables
 		nameWaveformHi : name of the table to store the waveform
 		nbSlice : number of slices of the signal
 		nbPixel : number of pixels of the camera
@@ -25,7 +25,7 @@ def createMWaveformTable(hfile, camTelGroup, nameWaveformHi, nbSlice, nbPixel, c
 	image_shape = (nbSlice, nbPixel)
 	columns_dict_waveformHi  = {nameWaveformHi: tables.UInt16Col(shape=image_shape)}
 	description_waveformHi = type('description columns_dict_waveformHi', (tables.IsDescription,), columns_dict_waveformHi)
-	hfile.create_table(camTelGroup, nameWaveformHi, description_waveformHi, "Table of waveform of the signal", chunkshape=chunkshape)
+	hfile.create_table(cam_tel_group, nameWaveformHi, description_waveformHi, "Table of waveform of the signal", chunkshape=chunkshape)
 
 
 def createTelescopeSliceSelectionNode(outFile, telNode, nbSlice, chunkshape=1):
@@ -39,14 +39,14 @@ def createTelescopeSliceSelectionNode(outFile, telNode, nbSlice, chunkshape=1):
 		nbSlice : number of slices to be expected
 		chunkshape : shape of the chunk to be used to store the data of waveform and minimum
 	'''
-	camTelGroup = copyTelescopeWithoutWaveform(outFile, telNode, chunkshape)
+	cam_tel_group = copyTelescopeWithoutWaveform(outFile, telNode, chunkshape)
 	
 	nbPixel = np.uint64(telNode.nbPixel.read())
 	
-	createMWaveformTable(outFile, camTelGroup, "waveformHi", nbSlice, nbPixel, chunkshape=chunkshape)
+	createMWaveformTable(outFile, cam_tel_group, "waveformHi", nbSlice, nbPixel, chunkshape=chunkshape)
 	nbGain = np.uint64(telNode.nbGain.read())
 	if nbGain > 1:
-		createMWaveformTable(outFile, camTelGroup, "waveformLo", nbSlice, nbPixel, chunkshape=chunkshape)
+		createMWaveformTable(outFile, cam_tel_group, "waveformLo", nbSlice, nbPixel, chunkshape=chunkshape)
 
 
 def createAllTelescopeMinSelected(outFile, inFile, nbSlice, chunkshape=1):

@@ -13,7 +13,7 @@ import argparse
 
 from ..tools.get_nb_tel import getNbTel
 from ..tools.r0_file import *
-from ..tools.r0_utils import createR1Dataset
+from ..tools.r0_utils import create_r0_dataset
 from ..tools.get_telescope_info import *
 from ..tools.simulation_utils import create_simulation_dataset
 from ..tools.instrument_utils import create_instrument_dataset
@@ -30,7 +30,7 @@ def create_file_structure(hfile, telInfo_from_evt):
 	-------
 		table of mc_event
 	'''
-	createR1Dataset(hfile, telInfo_from_evt)
+	create_r0_dataset(hfile, telInfo_from_evt)
 	create_instrument_dataset(hfile, telInfo_from_evt)
 	tableMcEvent = create_simulation_dataset(hfile)
 	return tableMcEvent

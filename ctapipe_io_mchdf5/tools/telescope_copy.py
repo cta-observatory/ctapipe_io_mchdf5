@@ -23,30 +23,30 @@ def copyTelescopeWithoutWaveform(outFile, telNode, r1NodeName="r1", chunkshape=1
 	telGroupName = telNode._v_name
 	print("copyTelescopeWithoutWaveform : telName = '",telGroupName,"'")
 	
-	camTelGroup = outFile.create_group("/"+r1NodeName, telGroupName, 'Data of telescopes '+telGroupName)
+	cam_tel_group = outFile.create_group("/"+r1NodeName, telGroupName, 'Data of telescopes '+telGroupName)
 	
-	outFile.copy_node(nbPixel, newparent=camTelGroup, recursive=True)
-	outFile.copy_node(telNode.nbSlice, newparent=camTelGroup, recursive=True)
-	outFile.copy_node(telNode.nbGain, newparent=camTelGroup, recursive=True)
-	outFile.copy_node(telNode.telIndex, newparent=camTelGroup, recursive=True)
-	outFile.copy_node(telNode.telType, newparent=camTelGroup, recursive=True)
-	outFile.copy_node(telNode.telId, newparent=camTelGroup, recursive=True)
+	outFile.copy_node(nbPixel, newparent=cam_tel_group, recursive=True)
+	outFile.copy_node(telNode.nbSlice, newparent=cam_tel_group, recursive=True)
+	outFile.copy_node(telNode.nbGain, newparent=cam_tel_group, recursive=True)
+	outFile.copy_node(telNode.telIndex, newparent=cam_tel_group, recursive=True)
+	outFile.copy_node(telNode.telType, newparent=cam_tel_group, recursive=True)
+	outFile.copy_node(telNode.telId, newparent=cam_tel_group, recursive=True)
 	try:
-		outFile.copy_node(telNode.tabRefShape, newparent=camTelGroup, recursive=True)
+		outFile.copy_node(telNode.tabRefShape, newparent=cam_tel_group, recursive=True)
 	except tables.exceptions.NoSuchNodeError as e:
 		pass
 	try:
-		outFile.copy_node(telNode.tabGain, newparent=camTelGroup, recursive=True)
+		outFile.copy_node(telNode.tabGain, newparent=cam_tel_group, recursive=True)
 	except tables.exceptions.NoSuchNodeError as e:
 		pass
 		
-	outFile.copy_node(telNode.trigger, newparent=camTelGroup, recursive=True)
-	outFile.copy_node(telNode.pedestal, newparent=camTelGroup, recursive=True)
+	outFile.copy_node(telNode.trigger, newparent=cam_tel_group, recursive=True)
+	outFile.copy_node(telNode.pedestal, newparent=cam_tel_group, recursive=True)
 	try:
-		outFile.copy_node(telNode.photo_electron_image, newparent=camTelGroup, recursive=True)
+		outFile.copy_node(telNode.photo_electron_image, newparent=cam_tel_group, recursive=True)
 	except tables.exceptions.NoSuchNodeError as e:
 		pass
-	return camTelGroup
+	return cam_tel_group
 	
 
 

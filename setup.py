@@ -8,7 +8,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 
 entry_points = {}
-entry_points['console_scripts'] = ['mchdf5_simtel2r1 = ctapipe_io_mchdf5.converter.mchdf5_simtel2r1:main',
+entry_points['console_scripts'] = ['mchdf5_simtel2r0 = ctapipe_io_mchdf5.converter.mchdf5_simtel2r0:main',
 					'mchdf5_tailcut_dilation_dl0v1 = ctapipe_io_mchdf5.converter.mchdf5_tailcut_dilation_dl0v1:main',
 					'mchdf5_tailcut_dilation_dl0v2 = ctapipe_io_mchdf5.converter.mchdf5_tailcut_dilation_dl0v2:main',
 					'test_mchdf5v2minselection = ctapipe_io_mchdf5.programs.mchdf5_min_selection:main',
