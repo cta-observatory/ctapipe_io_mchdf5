@@ -71,7 +71,7 @@ def getTelescopeInfoFromEvent(inputFileName, max_nb_tel):
 					pixRotation = source.subarray.tel[tel_id].camera.geometry.cam_rotation.value
 					
 					telInfo = dicoTelInfo[tel_id]
-					telType = np.uint64(get_camera_type_from_name(telInfo.camera.cam_id))
+					telType = np.uint64(get_camera_type_from_name(telInfo.camera.camera_name))
 					focalLen = np.float32(telInfo.optics.equivalent_focal_length.value)
 					
 					tabPixelX = np.asarray(telInfo.camera.pix_x, dtype=np.float32)
