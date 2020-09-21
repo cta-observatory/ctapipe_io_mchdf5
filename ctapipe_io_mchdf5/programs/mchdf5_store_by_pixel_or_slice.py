@@ -9,7 +9,7 @@ import numpy as np
 import argparse
 
 from ctapipe_io_mchdf5.tools.telescope_copy import copyAllTelWithoutWaveform
-from ctapipe_io_mchdf5.tools.copy_sort import createSortedWaveformTableShape
+from ctapipe_io_mchdf5.tools.copy_sort import create_sorted_waveform_tableShape
 
 MODE_PES = 0
 MODE_PSE = 1
@@ -118,7 +118,7 @@ def orderSwapChannel(outFile, telNodeOut, waveformIn, keyWaveform, selectionMode
 	
 	shapeStoredData = getShapeFromOrder(waveformIn.shape[0], waveformIn.shape[1], waveformIn.shape[2], selectionMode)
 	
-	waveformOut = createSortedWaveformTableShape(outFile, telNodeOut, keyWaveform, shapeStoredData)
+	waveformOut = create_sorted_waveform_tableShape(outFile, telNodeOut, keyWaveform, shapeStoredData)
 	rowWaveformOut = waveformOut.row
 	
 	swappedWaveform = getWaveformSwappedFromOrder(waveformIn, selectionMode)

@@ -218,7 +218,7 @@ def fill_simulation_header_info(hfile, inputFileName):
 		tabSimConf["min_scatter_range"] = np.float32(mcHeader.min_scatter_range)
 		tabSimConf["min_viewcone_radius"] = np.float32(mcHeader.min_viewcone_radius)
 		tabSimConf["num_showers"] = np.uint64(mcHeader.num_showers)
-		tabSimConf["obs_id"] = np.uint64(evt.r0.obs_id)
+		tabSimConf["obs_id"] = np.uint64(evt.index.obs_id)
 		tabSimConf["prod_site_B_declination"] = np.float32(mcHeader.prod_site_B_declination)
 		tabSimConf["prod_site_B_inclination"] = np.float32(mcHeader.prod_site_B_inclination)
 		tabSimConf["prod_site_B_total"] = np.float32(mcHeader.prod_site_B_total)
@@ -241,9 +241,9 @@ def append_corsika_event(tableMcCorsikaEvent, event):
 		event : Monte Carlo event to be used
 	'''
 	tabMcEvent = tableMcCorsikaEvent.row
-	tabMcEvent['event_id'] = np.uint64(event.r0.event_id)
-	tabMcEvent['true_az'] = np.float32(event.mc.az)
-	tabMcEvent['true_alt'] = np.float32(event.mc.alt)
+	tabMcEvent['event_id'] = np.uint64(event.index.event_id)
+	tabMcEvent['true_az'] = np.float32(np.rad2deg(event.mc.az))
+	tabMcEvent['true_alt'] = np.float32(np.rad2deg(event.mc.alt))
 	
 	tabMcEvent['true_core_x'] = np.float32(event.mc.core_x)
 	tabMcEvent['true_core_y'] = np.float32(event.mc.core_y)
@@ -254,7 +254,7 @@ def append_corsika_event(tableMcCorsikaEvent, event):
 	
 	tabMcEvent['true_x_max'] = np.float32(event.mc.x_max)
 	
-	tabMcEvent['obs_id'] = np.uint64(event.r0.obs_id)
+	tabMcEvent['obs_id'] = np.uint64(event.index.obs_id)
 	
 	#I don't know where to find the following informations but they exist in C version
 	#tabMcEvent['depthStart'] = np.float32(0.0)

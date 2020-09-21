@@ -16,8 +16,8 @@ from ..tools.r0_file import (create_file_structure,
 							 open_output_file)
 from ..tools.r0_utils import (append_event_telescope_data,
 							  flush_r0_tables)
-from ..tools.get_telescope_info import (getTelescopeInfoFromEvent,
-										checkIsSimulationFile)
+from ..tools.get_telescope_info import (get_telescope_info_from_event,
+										check_is_simulation_file)
 from ..tools.simulation_utils import (append_corsika_event,
 									  fill_simulation_header_info)
 from ..tools.instrument_utils import (fill_subarray_layout,
@@ -44,7 +44,7 @@ def main():
 	#Increase the number of nodes in cache if necessary (avoid warning about nodes reopening)
 	tables.parameters.NODE_CACHE_SLOTS = max(tables.parameters.NODE_CACHE_SLOTS, 3*nbTel + 20)
 	
-	telInfo_from_evt, nbEvent = getTelescopeInfoFromEvent(inputFileName, nbTel)
+	telInfo_from_evt, nbEvent = get_telescope_info_from_event(inputFileName, nbTel)
 	print("Found", nbEvent, "events")
 	hfile = open_output_file(args.output, compressionLevel=args.compression)
 	
@@ -54,7 +54,7 @@ def main():
 	print('Fill the subarray layout information')
 	fill_subarray_layout(hfile, telInfo_from_evt, nbTel)
 	
-	isSimulationMode = checkIsSimulationFile(telInfo_from_evt)
+	isSimulationMode = check_is_simulation_file(telInfo_from_evt)
 	
 	if isSimulationMode:
 		print('Fill the optic description of the telescopes')

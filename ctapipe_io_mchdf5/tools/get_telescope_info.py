@@ -11,7 +11,7 @@ try:
 except:
 	pass
 
-from .camera_tel_type import get_camera_type_from_name, getCameraNameFromType, getTelescopeTypeStrFromCameraType
+from .camera_tel_type import get_camera_type_from_name, get_camera_name_from_type, get_telescope_type_str_from_camera_type
 
 TELINFO_REFSHAPE = 0
 TELINFO_NBSLICE = 1
@@ -32,10 +32,21 @@ TELINFO_NBPIXEL = 15
 TELINFO_NBEVENT = 16
 TEL_INFOR_CAMERA_ROTATION = 17
 TEL_INFOR_PIX_ROTATION = 18
+TELINFO_TEL_NAME = 19
+TELINFO_TEL_CAMERA_NAME = 20
+TELINFO_PIX_AREA = 21
+TELINFO_REF_PULSE_TIME = 22
+TELINFO_ARRAY_ALT = 23
+TELINFO_ARRAY_AZ = 24
+TELINFO_ARRAY_RA = 25
+TELINFO_ARRAY_DEC = 26
+TELINFO_TEL_OPTICS = TELINFO_TEL_NAME
+TELINFO_TEL_CAMERA_GEOMETRY = TELINFO_TEL_CAMERA_NAME
+TELINFO_TEL_CAMERA_READOUT = TELINFO_TEL_CAMERA_NAME
 
 
-def getTelescopeInfoFromEvent(inputFileName, max_nb_tel):
-	'''
+def get_telescope_info_from_event(inputFileName, max_nb_tel):
+	"""
 	Get the telescope information from the event
 	Parameters:
 	-----------
@@ -44,8 +55,8 @@ def getTelescopeInfoFromEvent(inputFileName, max_nb_tel):
 	Return:
 	-------
 		tuple of (dictionnnary which contains the telescope informations (ref_shape, nb_slice, ped, gain) with telescope id as key, and the number of events in the file
-	'''
-	telescope_info = dict() # Key is tel id, value (ref_shape, slice, ped, gain, telType, focalLen, tabPixelX, tabPixelY, nbMirror)
+	"""
+	telescope_info = dict()  # Key is tel id, value (ref_shape, slice, ped, gain, telType, focalLen, tabPixelX, tabPixelY, nbMirror)
 	nbEvent = 0
 	with event_source(inputFileName) as source:
 		dicoTelInfo = None
@@ -72,6 +83,12 @@ def getTelescopeInfoFromEvent(inputFileName, max_nb_tel):
 					
 					telInfo = dicoTelInfo[tel_id]
 					telType = np.uint64(get_camera_type_from_name(telInfo.camera.camera_name))
+					tel_name = telInfo.name
+					camera_name = telInfo.camera.camera_name
+					ref_pulse_time = telInfo.camera.readout.reference_pulse_sample_time.value
+
+					pix_area = telInfo.camera.geometry.pix_area.value
+
 					focalLen = np.float32(telInfo.optics.equivalent_focal_length.value)
 					
 					tabPixelX = np.asarray(telInfo.camera.geometry.pix_x.value, dtype=np.float32)
@@ -80,21 +97,27 @@ def getTelescopeInfoFromEvent(inputFileName, max_nb_tel):
 					nbMirror = np.uint64(telInfo.optics.num_mirrors)
 					nbMirrorTiles = np.uint64(telInfo.optics.num_mirror_tiles)
 					mirrorArea = np.uint64(telInfo.optics.mirror_area.value)
-					
+
+					array_alt = np.float32(evt.pointing.array_altitude.value)
+					array_az = np.float32(evt.pointing.array_azimuth.value)
+					array_ra = np.float32(evt.pointing.array_ra.value)
+					array_dec = np.float32(evt.pointing.array_dec.value)
+
 					telX = posTelX[int(tel_id - 1)]
 					telY = posTelY[int(tel_id - 1)]
 					telZ = posTelZ[int(tel_id - 1)]
 					
-					telescope_info[tel_id] = [ref_shape, nb_slice, ped, gain, telType, focalLen, tabPixelX, tabPixelY, nbMirror,
-									telX, telY, telZ, nbMirrorTiles, mirrorArea, nbGain, nbPixel, 0, cameraRotation, pixRotation]
+					telescope_info[tel_id] = [ref_shape, nb_slice, ped, gain, telType, focalLen, tabPixelX, tabPixelY,
+											  nbMirror, telX, telY, telZ, nbMirrorTiles, mirrorArea, nbGain, nbPixel, 0,
+											  cameraRotation, pixRotation, tel_name, camera_name, pix_area,
+											  ref_pulse_time, array_alt, array_az, array_ra, array_dec]
 				else:
 					telescope_info[tel_id][TELINFO_NBEVENT] += 1
 	return telescope_info, nbEvent
 
 
-
-def checkIsSimulationFile(telInfo_from_evt):
-	'''
+def check_is_simulation_file(telInfo_from_evt):
+	"""
 	Function which check if the file is a simulation one or not
 	For now there is no origin in the ctapipe_io_lst plugin so I use this function to get the origin of the file
 	Parameters:
@@ -103,7 +126,7 @@ def checkIsSimulationFile(telInfo_from_evt):
 	Return:
 	-------
 		True if the data seems to provide of a simulation, False if not
-	'''
+	"""
 	for key, value in telInfo_from_evt.items():
 		if value[TELINFO_REFSHAPE] is None:
 			return False

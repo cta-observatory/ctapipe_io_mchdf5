@@ -8,7 +8,7 @@ import tables
 import numpy as np
 import argparse
 
-from ctapipe_io_mchdf5.tools.copy_sort import createAllTelescopeSorted
+from ctapipe_io_mchdf5.tools.copy_sort import create_all_telescope_sorted
 
 MODE_RANGE = 0
 MODE_MEAN = 1
@@ -317,7 +317,7 @@ def sortPixelFile(inputFileName, outputFileName, isStoreSlicePixel, selectionMod
 		outFile.copy_node(inFile.root.simulation, newparent=outFile.root, recursive=True)
 	except:
 		pass
-	createAllTelescopeSorted(outFile, inFile, isStoreSlicePixel)
+	create_all_telescope_sorted(outFile, inFile, isStoreSlicePixel)
 	copySortedR1(outFile, inFile, isStoreSlicePixel, selectionMode, nbEventPerInjTab)
 	inFile.close()
 	outFile.close()

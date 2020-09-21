@@ -96,20 +96,20 @@ def fill_subarray_layout(hfile, telInfo_from_evt, nbTel):
 		if telId in telInfo_from_evt:
 			telInfo = telInfo_from_evt[telId]
 			telType = telInfo[TELINFO_TELTYPE]
-			camera_name = getCameraNameFromType(telType)
-			telTypeStr = getTelescopeTypeStrFromCameraType(telType)
+			camera_name = get_camera_name_from_type(telType)
+			telTypeStr = get_telescope_type_str_from_camera_type(telType)
 			
 			tabSubLayout["tel_id"] = np.uint64(telId)
 			tabSubLayout["pos_x"] = np.float32(telInfo[TELINFO_TELPOSX])
 			tabSubLayout["pos_y"] = np.float32(telInfo[TELINFO_TELPOSY])
 			tabSubLayout["pos_z"] = np.float32(telInfo[TELINFO_TELPOSZ])
-			tabSubLayout["name"] = camera_name
+			tabSubLayout["name"] = telInfo[TELINFO_TEL_NAME]
 			tabSubLayout["type"] = telTypeStr
 			tabSubLayout["type_id"] = np.uint64(telType)
 			
 			tabSubLayout["num_mirrors"] = np.uint64(telInfo[TELINFO_NBMIRROR])
-			tabSubLayout["camera_type"] = camera_name + "Cam"
-			tabSubLayout["tel_description"] = "Description"
+			tabSubLayout["camera_type"] = camera_name
+			tabSubLayout["tel_description"] = telTypeStr + '_' + telInfo[TELINFO_TEL_NAME] + '_' + camera_name
 			tabSubLayout.append()
 		else:
 			tabSubLayout["tel_id"] = np.uint64(telId)
@@ -135,16 +135,16 @@ def create_camera_table(hfile, telInfo):
 		hfile : HDF5 file to be used
 		telInfo : table of some informations related to the telescope
 	'''
-	camera_name = getCameraNameFromType(telInfo[TELINFO_TELTYPE])
+	camera_name = get_camera_name_from_type(telInfo[TELINFO_TELTYPE])
 	geometry_camera_name = 'geometry_' + camera_name
 	readout_camera_name = 'readout_' + camera_name
 
 	pix_x = np.asarray(telInfo[TELINFO_TABPIXELX], dtype=np.float32)
 	pix_y = np.asarray(telInfo[TELINFO_TABPIXELY], dtype=np.float32)
+	pix_area = np.asanyarray(telInfo[TELINFO_PIX_AREA], dtype=np.float32)
 
 	# You can get it directly from telInfo if you complete the field from `get_telescope_info`
 	pix_id = np.arange(0, pix_y.size, dtype=np.uint64)
-	pix_area = np.zeros(pix_y.size, dtype=np.float32)
 
 	try:
 		camera_telescope_table = hfile.create_table("/configuration/instrument/telescope/camera", geometry_camera_name,
@@ -160,19 +160,21 @@ def create_camera_table(hfile, telInfo):
 			camera_tel_row.append()
 
 		info_ref_shape = telInfo[TELINFO_REFSHAPE]
+		info_ref_pulse_time = telInfo[TELINFO_REF_PULSE_TIME]
 		if info_ref_shape is not None:
 			camera_readout_table = hfile.create_table("/configuration/instrument/telescope/camera", readout_camera_name,
-												  CameraReadOut, "Reference shape of " + camera_name)
+													  CameraReadOut, "Reference shape of " + camera_name)
 			camera_readout_table_row = camera_readout_table.row
 
 			tab_ref_shape = np.asarray(info_ref_shape, dtype=np.float32)
 			nb_sample = np.uint64(tab_ref_shape.shape[1])  # in cols
 
+			tab_ref_pulse_time = np.asarray(info_ref_pulse_time, dtype=np.float32)
 			for i in range(nb_sample):
-				camera_readout_table_row['reference_pulse_shape_channel0'] = np.float32(tab_ref_shape[i, 0])
-				camera_readout_table_row['reference_pulse_sample_time'] = np.float32(float(i)/float(nb_sample))
+				camera_readout_table_row['reference_pulse_shape_channel0'] = np.float32(tab_ref_shape[0, i])
+				camera_readout_table_row['reference_pulse_sample_time'] = tab_ref_pulse_time[i]
 				if telInfo[TELINFO_NBGAIN] == 2:
-					camera_readout_table_row['reference_pulse_shape_channel1'] = np.float32(tab_ref_shape[i, 1])
+					camera_readout_table_row['reference_pulse_shape_channel1'] = np.float32(tab_ref_shape[1, i])
 
 				camera_readout_table_row.append()
 
@@ -190,14 +192,14 @@ def create_instrument_dataset(hfile, telInfo_from_evt):
 	# Group: configuration
 	hfile.create_group('/', 'configuration', 'Simulation, telescope and subarray configuration.')
 	# Group : configuration/instrument
-	hfile.create_group('/configuration', 'instrument', 'Instrument informations of the run')
+	hfile.create_group('/configuration', 'instrument', 'Instrument information of the run')
 	# Group : configuration/instrument/subarray
 	subarray_group = hfile.create_group('/configuration/instrument', 'subarray', 'Subarray of the run')
 	# Group : configuration/instrument/subarray/telescope
 	telescope_group = hfile.create_group('/configuration/instrument', 'telescope', 'Telescope of the subarray')
 	hfile.create_table(subarray_group, 'layout', SubarrayLayout, "Layout of the subarray")
-	# Group : configuration/instrument/subarray/telescope/camera
-	hfile.create_group("/configuration/instrument/subarray/telescope", 'camera', 'Cameras in the run')
+	# Group : configuration/instrument/telescope/camera
+	hfile.create_group("/configuration/instrument/telescope", 'camera', 'Cameras in the run')
 	
 	for telId, telInfo in telInfo_from_evt.items():
 		create_camera_table(hfile, telInfo)
@@ -215,7 +217,7 @@ def fill_optic_description(hfile, telInfo_from_evt, nbTel):
 		nbTel : number of telescope in the run
 	'''
 	
-	tableOptic = hfile.root.instrument.subarray.telescope.optics
+	tableOptic = hfile.root.configuration.instrument.telescope.optics
 	tabOp = tableOptic.row
 	for telIndexIter in range(0, nbTel):
 		telId = telIndexIter + 1
@@ -223,11 +225,11 @@ def fill_optic_description(hfile, telInfo_from_evt, nbTel):
 			telInfo = telInfo_from_evt[telId]
 			telType = telInfo[TELINFO_TELTYPE]
 			
-			camera_name = getCameraNameFromType(telType)
-			telTypeStr = getTelescopeTypeStrFromCameraType(telType)
+			camera_name = get_camera_name_from_type(telType)
+			telTypeStr = get_telescope_type_str_from_camera_type(telType)
 			
-			tabOp["description"] = "Description"
-			tabOp["name"] = camera_name
+			tabOp["description"] = telTypeStr + '_' + telInfo[TELINFO_TEL_NAME] + '_' + camera_name
+			tabOp["name"] = telInfo[TELINFO_TEL_NAME]
 			tabOp["type"] = telTypeStr
 			tabOp["mirror_area"] = np.float32(telInfo[TELINFO_MIRRORAREA])
 			tabOp["num_mirrors"] = np.float32(telInfo[TELINFO_NBMIRROR])
