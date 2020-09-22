@@ -31,7 +31,7 @@ class TelescopePointing(tables.IsDescription):
 	"""
 	Create the telescope point table
 	"""
-	telescopetrigger_time = tables.Float32Col()
+	telescopetrigger_time = tables.Float64Col()
 	azimuth = tables.Float32Col()
 	altitude = tables.Float32Col()
 
@@ -191,14 +191,15 @@ def create_mon_tel_info(hfile, telId, telInfo, nb_gain, nb_pixel, nb_slice):
 	tel_info_table_row.append()
 
 
-def create_mon_tel_pointing(hfile, telId, nb_pixel, chunkshape=1):
+def create_mon_tel_pointing(hfile, telId, nb_pixel, tel_info, chunkshape=1):
 	"""
 	Create the base of the telescope structure without waveform
 	Parameters:
 	-----------
 		hfile : HDF5 file to be used
 		telId : id of the telescope
-		nb_pixel :
+		nb_pixel : number of pixel of the camera
+		tel_info : table of some informations related to the telescope
 		chunkshape : shape of the chunk to be used to store the data
 	Return:
 	-------
@@ -208,9 +209,11 @@ def create_mon_tel_pointing(hfile, telId, nb_pixel, chunkshape=1):
 									   TelescopePointing, 'Pointing of telescopes ' + str(telId))
 
 	cam_tel_table_row = cam_tel_table.row
-	cam_tel_table_row['telescopetrigger_time'] = np.float32(0)  # TODO find where this info comes from
-	cam_tel_table_row['azimuth'] = np.float32(0)  # TODO find where this info comes from
-	cam_tel_table_row['altitude'] = np.float32(0)  # TODO find where this info comes from
+	cam_tel_table_row['telescopetrigger_time'] = np.float32(tel_info[TELINFO_TIME_FIRST_EV])
+	cam_tel_table_row['azimuth'] = np.float32(tel_info[TELINFO_ARRAY_AZ])
+	cam_tel_table_row['altitude'] = np.float32(tel_info[TELINFO_ARRAY_ALT])
+
+	cam_tel_table_row.append()
 
 	columns_dict_photo_electron_image = {'event_id': tables.UInt64Col(),
 										 "photo_electron_image": tables.Float32Col(shape=nb_pixel)}
@@ -243,7 +246,7 @@ def create_tel_group_and_table(hfile, telId, telInfo, chunkshape=1):
 	nb_slice = np.uint64(telInfo[TELINFO_NBSLICE])
 	image_shape = (nb_slice, nb_pixel)
 
-	create_mon_tel_pointing(hfile, telId, nb_pixel, chunkshape=chunkshape)
+	create_mon_tel_pointing(hfile, telId, nb_pixel, telInfo, chunkshape=chunkshape)
 
 	create_mon_tel_pedestal(hfile, telInfo, nb_pixel, nb_gain, telId)
 	create_mon_tel_gain(hfile, telInfo, telId)
@@ -264,14 +267,15 @@ def fill_monitoring_subarray(hfile, mon_subarray_pointing_group, telInfo_from_ev
 	mon_subarray_pointing_table = hfile.create_table(mon_subarray_pointing_group, 'pointing',
 													 MonitoringSubarrayPointing, 'Monitoring Subarray Pointing')
 
+	tel_info = next(iter(telInfo_from_evt.values()))
+
 	# TODO & complain
 	# TODO are all the events ? or just the first tel that triggered.
 	# TODO same for time. each event time or first event time
 	mon_subarray_pointing_table_row = mon_subarray_pointing_table.row
-	mon_subarray_pointing_table_row['time'] = np.float64(0)  # TODO
+	mon_subarray_pointing_table_row['time'] = np.float64(tel_info[TELINFO_TIME_FIRST_EV])
 	mon_subarray_pointing_table_row['tels_with_trigger'] = np.uint64(0)  # TODO
 
-	tel_info = next(iter(telInfo_from_evt.values()))
 
 	mon_subarray_pointing_table_row['array_azimuth'] = tel_info[TELINFO_ARRAY_AZ]
 	mon_subarray_pointing_table_row['array_altitude'] = tel_info[TELINFO_ARRAY_ALT]
@@ -377,7 +381,7 @@ def append_event_telescope_data(hfile, event):
 
 	event_subarray_trigger_row = hfile.root.r0.event.subarray.trigger.row
 	event_subarray_trigger_row['event_id'] = event.index.event_id
-	event_subarray_trigger_row['time'] = event.trigger.time.value
+	event_subarray_trigger_row['time'] = np.float64(event.trigger.time.to_value('unix'))
 	event_subarray_trigger_row['event_type'] = event.trigger.event_type.value
 	event_subarray_trigger_row['obs_id'] = event.index.obs_id
 

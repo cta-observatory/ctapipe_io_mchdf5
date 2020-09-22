@@ -63,7 +63,7 @@ def create_dl0_tel_group_and_table(hfile, telId, telInfo, chunkshape=1):
 	create_dl0_table_tel(hfile, cam_tel_group, nbGain, nbPixel, nbSlice, chunkshape=chunkshape)
 
 
-def create_dl0_dataset(hfile, telInfo_from_evt):
+def createDL0Dataset(hfile, telInfo_from_evt):
 	"""
 	Create the dl0 dataset
 	Parameters:

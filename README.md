@@ -1,6 +1,8 @@
 [![Build Status](https://travis-ci.org/cta-observatory/ctapipe_io_mchdf5.svg?branch=master)](https://travis-ci.org/cta-observatory/ctapipe_io_mchdf5)
 
-ctapipe plugin for reading and converting Monte-Carlo files (contains the same information as Simtel files)
+ctapipe plugin for reading and converting Monte-Carlo files (contains the same information as Simtel files).
+
+Repository **CURRENTLY** getting update with _ctapipe_0.8 data format.
 
 Installation
 ============
@@ -10,11 +12,11 @@ Installation
   $ cd ctapipe_io_mchdf5
   $ python setup.py install
 ```
-Simtel file conversion to HDF5-R1
+Simtel file conversion to HDF5-R0
 =================================
 
 ```sh
-  $ mchdf5_simtel2r1 -i inputFile.simtel.gz -o outputFile.h5
+  $ mchdf5_simtel2r0 -i inputFile.simtel.gz -o outputFile.h5
 ```
 
 

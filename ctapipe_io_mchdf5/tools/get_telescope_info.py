@@ -40,6 +40,7 @@ TELINFO_ARRAY_ALT = 23
 TELINFO_ARRAY_AZ = 24
 TELINFO_ARRAY_RA = 25
 TELINFO_ARRAY_DEC = 26
+TELINFO_TIME_FIRST_EV = 27
 TELINFO_TEL_OPTICS = TELINFO_TEL_NAME
 TELINFO_TEL_CAMERA_GEOMETRY = TELINFO_TEL_CAMERA_NAME
 TELINFO_TEL_CAMERA_READOUT = TELINFO_TEL_CAMERA_NAME
@@ -103,6 +104,8 @@ def get_telescope_info_from_event(inputFileName, max_nb_tel):
 					array_ra = np.float32(evt.pointing.array_ra.value)
 					array_dec = np.float32(evt.pointing.array_dec.value)
 
+					time_first_event = np.float64(evt.trigger.time.to_value('unix'))
+
 					telX = posTelX[int(tel_id - 1)]
 					telY = posTelY[int(tel_id - 1)]
 					telZ = posTelZ[int(tel_id - 1)]
@@ -110,7 +113,8 @@ def get_telescope_info_from_event(inputFileName, max_nb_tel):
 					telescope_info[tel_id] = [ref_shape, nb_slice, ped, gain, telType, focalLen, tabPixelX, tabPixelY,
 											  nbMirror, telX, telY, telZ, nbMirrorTiles, mirrorArea, nbGain, nbPixel, 0,
 											  cameraRotation, pixRotation, tel_name, camera_name, pix_area,
-											  ref_pulse_time, array_alt, array_az, array_ra, array_dec]
+											  ref_pulse_time, array_alt, array_az, array_ra, array_dec,
+											  time_first_event]
 				else:
 					telescope_info[tel_id][TELINFO_NBEVENT] += 1
 	return telescope_info, nbEvent

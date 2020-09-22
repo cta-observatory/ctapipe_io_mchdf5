@@ -1,11 +1,11 @@
 
 # coding: utf-8
 
-'''
+"""
 	Auteur : Pierre Aubert
 	Mail : aubertp7@gmail.com
 	Licence : CeCILL-C
-'''
+"""
 
 import tables
 from ctapipe.io import event_source
@@ -40,31 +40,31 @@ def main():
 	inputFileName = args.input
 	nbTel = getNbTel(inputFileName)
 	print("Number of telescope : ", nbTel)
-	
-	#Increase the number of nodes in cache if necessary (avoid warning about nodes reopening)
+
+	# Increase the number of nodes in cache if necessary (avoid warning about nodes reopening)
 	tables.parameters.NODE_CACHE_SLOTS = max(tables.parameters.NODE_CACHE_SLOTS, 3*nbTel + 20)
-	
+
 	telInfo_from_evt, nbEvent = get_telescope_info_from_event(inputFileName, nbTel)
 	print("Found", nbEvent, "events")
 	hfile = open_output_file(args.output, compressionLevel=args.compression)
-	
+
 	print('Create file structure')
 	tableMcCorsikaEvent = create_file_structure(hfile, telInfo_from_evt)
-	
+
 	print('Fill the subarray layout information')
 	fill_subarray_layout(hfile, telInfo_from_evt, nbTel)
-	
+
 	isSimulationMode = check_is_simulation_file(telInfo_from_evt)
-	
+
 	if isSimulationMode:
 		print('Fill the optic description of the telescopes')
 		fill_optic_description(hfile, telInfo_from_evt, nbTel)
-		
+
 		print('Fill the simulation header information')
 		fill_simulation_header_info(hfile, inputFileName)
-	
+
 	source = event_source(inputFileName)
-	
+
 	nb_event = 0
 	max_event = 10000000
 	if args.max_event != None:
@@ -83,7 +83,7 @@ def main():
 	print("\nFlushing tables")
 	if isSimulationMode:
 		tableMcCorsikaEvent.flush()
-		
+
 	flush_r0_tables(hfile)
 	hfile.close()
 	print('\nDone')

@@ -64,14 +64,15 @@ def create_all_telescope_sorted(outFile, inFile, isStoreSlicePixel, chunkshape=1
 		isStoreSlicePixel : true to store data per slice and pixel, false for pixel and slice
 		chunkshape : shape of the chunk to be used to store the data of waveform and minimum
 	"""
-	outFile.create_group("/", 'r1', 'Raw data waveform information of the run')
-	for telNode in inFile.walk_nodes("/r1", "Group"):
+	outFile.create_group("/", 'r0', 'Raw data waveform information of the run')
+	for telNode in inFile.walk_nodes("/r0", "Group"):
 		try:
 			create_telescope_sorted(outFile, telNode, isStoreSlicePixel, chunkshape=chunkshape)
 		except tables.exceptions.NoSuchNodeError as e:
 			pass
 
-def create_sorted_waveform_tableShape(hfile, cam_tel_group, nameWaveformHi, dataEntryShape, chunkshape=1):
+
+def create_sorted_waveform_table_shape(hfile, cam_tel_group, nameWaveformHi, dataEntryShape, chunkshape=1):
 	"""
 	Create the table to store the signal
 	Parameters:
