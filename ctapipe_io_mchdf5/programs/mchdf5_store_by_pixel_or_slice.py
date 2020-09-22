@@ -8,7 +8,7 @@ import tables
 import numpy as np
 import argparse
 
-from ctapipe_io_mchdf5.tools.telescope_copy import copyAllTelWithoutWaveform
+from ctapipe_io_mchdf5.tools.telescope_copy import copy_all_tel_without_waveform
 from ctapipe_io_mchdf5.tools.copy_sort import create_sorted_waveform_tableShape
 
 MODE_PES = 0
@@ -186,7 +186,7 @@ def sortPixelFile(inputFileName, outputFileName, selectionMode):
 		outFile.copy_node(inFile.root.simulation, newparent=outFile.root, recursive=True)
 	except:
 		pass
-	copyAllTelWithoutWaveform(outFile, inFile)
+	copy_all_tel_without_waveform(outFile, inFile)
 	copySortedR1(outFile, inFile, selectionMode)
 	inFile.close()
 	outFile.close()

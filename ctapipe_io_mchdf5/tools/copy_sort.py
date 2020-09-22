@@ -7,7 +7,7 @@
 import tables
 import numpy as np
 
-from .telescope_copy import copyTelescopeWithoutWaveform
+from .telescope_copy import copy_telescope_without_waveform
 
 
 def create_sorted_waveform_table(hfile, cam_tel_group, nameWaveformHi, nbSlice, nbPixel, isStoreSlicePixel,
@@ -37,13 +37,12 @@ def create_telescope_sorted(outFile, telNode, isStoreSlicePixel, chunkshape=1):
 	"""
 	Create the telescope group and table
 	Parameters:
-	-----------
 		outFile : HDF5 file to be used
 		telNode : telescope node to be copied
 		isStoreSlicePixel : true to store data per slice and pixel, false for pixel and slice
 		chunkshape : shape of the chunk to be used to store the data of waveform and minimum
 	"""
-	cam_tel_group = copyTelescopeWithoutWaveform(outFile, telNode, chunkshape)
+	cam_tel_group = copy_telescope_without_waveform(outFile, telNode, chunkshape)
 
 	nbPixel = np.uint64(telNode.nbPixel.read())
 	nbSlice = np.uint64(telNode.nbSlice.read())
@@ -60,7 +59,6 @@ def create_all_telescope_sorted(outFile, inFile, isStoreSlicePixel, chunkshape=1
 	"""
 	Create all the telescope ready for pixels sorting
 	Parameters:
-	-----------
 		outFile : output file
 		inFile : input file
 		isStoreSlicePixel : true to store data per slice and pixel, false for pixel and slice
@@ -72,7 +70,6 @@ def create_all_telescope_sorted(outFile, inFile, isStoreSlicePixel, chunkshape=1
 			create_telescope_sorted(outFile, telNode, isStoreSlicePixel, chunkshape=chunkshape)
 		except tables.exceptions.NoSuchNodeError as e:
 			pass
-
 
 def create_sorted_waveform_tableShape(hfile, cam_tel_group, nameWaveformHi, dataEntryShape, chunkshape=1):
 	"""

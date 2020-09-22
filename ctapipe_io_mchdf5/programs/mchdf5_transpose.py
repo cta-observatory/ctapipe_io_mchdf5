@@ -8,7 +8,7 @@ import tables
 import numpy as np
 import argparse
 
-from ctapipe_io_mchdf5.tools.telescope_copy import copyTelescopeWithoutWaveform
+from ctapipe_io_mchdf5.tools.telescope_copy import copy_telescope_without_waveform
 
 
 def createTransposedWaveformTable(hfile, cam_tel_group, nameWaveformHi, nbSlice, nbPixel, chunkshape=1):
@@ -38,7 +38,7 @@ def createTelescopeTransposed(outFile, telNode, chunkshape=1):
 		telNode : telescope node to be copied
 		chunkshape : shape of the chunk to be used to store the data of waveform and minimum
 	'''
-	cam_tel_group = copyTelescopeWithoutWaveform(outFile, telNode, chunkshape)
+	cam_tel_group = copy_telescope_without_waveform(outFile, telNode, chunkshape)
 	print("createTelescopeTransposed : base of telescope copied")
 	nbPixel = np.uint64(telNode.nbPixel.read())
 	nbSlice = np.uint64(telNode.nbSlice.read())

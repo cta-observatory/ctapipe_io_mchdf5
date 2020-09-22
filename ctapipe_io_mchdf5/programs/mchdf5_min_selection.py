@@ -8,7 +8,7 @@ import tables
 import numpy as np
 import argparse
 
-from ctapipe_io_mchdf5.tools.min_selection_utils import createAllTelescopeMinSelected
+from ctapipe_io_mchdf5.tools.min_selection_utils import create_all_telescope_min_selected
 
 
 def processMinSelectionChannelBlock(tabWaveformMin, keyWaveformMin, tabMin, keyMin, tabWaveformPart):
@@ -127,7 +127,7 @@ def processMinSelection(inputFileName, outputFileName, nbEventPerMin, chunkshape
 	except:
 		pass
 	
-	createAllTelescopeMinSelected(outFile, inFile, nbEventPerMin, chunkshape=chunkshape)
+	create_all_telescope_min_selected(outFile, inFile, nbEventPerMin, chunkshape=chunkshape)
 	processMinSelectionAllTelescope(outFile, inFile, nbEventPerMin)
 	
 	inFile.close()

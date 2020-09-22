@@ -9,7 +9,7 @@ import tables
 import numpy as np
 import argparse
 
-from ctapipe_io_mchdf5.tools.telescope_copy import copyTelescopeWithoutWaveform
+from ctapipe_io_mchdf5.tools.telescope_copy import copy_telescope_without_waveform
 
 def createMWaveformTable(hfile, cam_tel_group, nameWaveformHi, nbSlice, nbPixel, chunkshape=1):
 	'''
@@ -39,7 +39,7 @@ def createTelescopeSliceSelectionNode(outFile, telNode, nbSlice, chunkshape=1):
 		nbSlice : number of slices to be expected
 		chunkshape : shape of the chunk to be used to store the data of waveform and minimum
 	'''
-	cam_tel_group = copyTelescopeWithoutWaveform(outFile, telNode, chunkshape)
+	cam_tel_group = copy_telescope_without_waveform(outFile, telNode, chunkshape)
 	
 	nbPixel = np.uint64(telNode.nbPixel.read())
 	
@@ -49,7 +49,7 @@ def createTelescopeSliceSelectionNode(outFile, telNode, nbSlice, chunkshape=1):
 		createMWaveformTable(outFile, cam_tel_group, "waveformLo", nbSlice, nbPixel, chunkshape=chunkshape)
 
 
-def createAllTelescopeMinSelected(outFile, inFile, nbSlice, chunkshape=1):
+def create_all_telescope_min_selected(outFile, inFile, nbSlice, chunkshape=1):
 	'''
 	Create all the telescope with the minimum selection
 	Parameters:
@@ -152,7 +152,7 @@ def processSliceSelectionFile(inputFileName, outputFileName, firstSliceIndex, la
 		pass
 	
 	nbSlice = lastSliceIndex - firstSliceIndex
-	createAllTelescopeMinSelected(outFile, inFile, nbSlice, chunkshape=chunkshape)
+	create_all_telescope_min_selected(outFile, inFile, nbSlice, chunkshape=chunkshape)
 	copySelectedSlicesR1(outFile, inFile, firstSliceIndex, lastSliceIndex)
 	inFile.close()
 	outFile.close()

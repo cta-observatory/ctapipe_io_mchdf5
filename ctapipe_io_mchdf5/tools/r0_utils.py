@@ -4,9 +4,7 @@
 	Licence : CeCILL-C
 """
 
-import numbers
 import tables
-import numpy as np
 try:
 	from .get_telescope_info import *
 except:
@@ -127,23 +125,23 @@ def create_mon_tel_pedestal(hfile, telInfo, nb_gain, nb_pixel, telId):
 	Create the r0/monitoring/telescope/pedestal table information for a single telescope
 	Parameters:
 		hfile: HDF5 file to be used
-		telInfo:
-		nb_gain:
-		nb_pixel:
-		telId:
+		telInfo : table of some information related to the telescope
+		nb_gain : number of gain of the camera
+		nb_pixel : number of pixel of the camera
+		telId : id of the telescope
 	"""
 	info_tab_ped = telInfo[TELINFO_PEDESTAL]
 	tabPed = np.asarray(info_tab_ped, dtype=np.float32)
 
-	tablePedestal = create_table_pedestal(hfile, hfile.root.r0.monitoring.telescope.pedestal, nb_gain, nb_pixel, telId)
+	table_pedestal = create_table_pedestal(hfile, hfile.root.r0.monitoring.telescope.pedestal, nb_gain, nb_pixel, telId)
 
 	if info_tab_ped is not None:
-		tabPedForEntry = tablePedestal.row
-		tabPedForEntry["first_event_id"] = np.uint64(0)
-		tabPedForEntry["last_event_id"] = np.uint64(1)
-		tabPedForEntry["pedestal"] = tabPed.T
-		tabPedForEntry.append()
-		tablePedestal.flush()
+		tab_ped_for_entry = table_pedestal.row
+		tab_ped_for_entry["first_event_id"] = np.uint64(0)
+		tab_ped_for_entry["last_event_id"] = np.uint64(1)
+		tab_ped_for_entry["pedestal"] = tabPed.T
+		tab_ped_for_entry.append()
+		table_pedestal.flush()
 
 
 def create_mon_tel_gain(hfile, telInfo, telId):
@@ -151,7 +149,7 @@ def create_mon_tel_gain(hfile, telInfo, telId):
 	Create the r0/monitoring/telescope/gain table information for a single telescope
 	Parameters:
 		hfile: HDF5 file to be used
-		telInfo : table of some informations related to the telescope
+		telInfo : table of some information related to the telescope
 		telId : id of the telescope
 	"""
 	info_tab_gain = telInfo[TELINFO_GAIN]
@@ -169,11 +167,11 @@ def create_mon_tel_info(hfile, telId, telInfo, nb_gain, nb_pixel, nb_slice):
 
 	Parameters:
 		hfile: HDF5 file to be used
-		telId:
-		telInfo:
-		nb_gain:
-		nb_pixel:
-		nb_slice:
+		telId : id of the telescope
+		telInfo : table of some information related to the telescope
+		nb_gain : number of gain of the camera
+		nb_pixel : number of pixel of the camera
+		nb_slice: number of slices of the camera
 	"""
 	tel_index = telId - 1
 	tel_type = np.uint64(telInfo[TELINFO_TELTYPE])
@@ -346,14 +344,14 @@ def append_photo_electron_image_in_telescope(tel_pe_table, pe_image, eventId):
 
 
 def append_waveform_in_telescope(tel_wf_table, waveform, eventId):
-	'''
+	"""
 	Append a waveform signal (to be transposed) into a telescope node
 	-------------------
 	Parameters :
 		tel_wf_table : telescope waveform table to be used
 		waveform : waveform signal to be used
 		eventId : id of the corresponding event
-	'''
+	"""
 	tel_wf_table_row = tel_wf_table.row
 	tel_wf_table_row['event_id'] = eventId
 
@@ -366,13 +364,13 @@ def append_waveform_in_telescope(tel_wf_table, waveform, eventId):
 
 
 def append_event_telescope_data(hfile, event):
-	'''
+	"""
 	Append data from event in telescopes
 	--------------
 	Parameters :
 		hfile : HDF5 file to be used
 		event : current event
-	'''
+	"""
 	tab_tel_with_data = list(event.r0.tels_with_data)
 	event_subarray_tel_w_trigger_row = hfile.root.r0.event.subarray.tels_with_trigger
 	event_subarray_tel_w_trigger_row.append(tab_tel_with_data)
@@ -397,11 +395,11 @@ def append_event_telescope_data(hfile, event):
 
 
 def flush_r0_tables(hfile):
-	'''
+	"""
 	Flush all the R0 tables
 	Parameters:
 		hfile : file to be used
-	'''
+	"""
 	for telNode in hfile.walk_nodes("/r0", "Group"):
 		try:
 			nbGain = np.uint64(telNode.nbGain.read())

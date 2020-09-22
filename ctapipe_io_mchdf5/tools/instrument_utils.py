@@ -1,15 +1,15 @@
-'''
+"""
 	Auteur : Pierre Aubert
 	Mail : aubertp7@gmail.com
 	Licence : CeCILL-C
-'''
+"""
 
 import tables
 from .get_telescope_info import *
 
 
 class SubarrayLayout(tables.IsDescription):
-	'''
+	"""
 	Layout of the subarray
 	Attributes:
 		tel_id : id of the telescope
@@ -22,7 +22,7 @@ class SubarrayLayout(tables.IsDescription):
 		num_mirrors : number of mirror of the telescope
 		camera_type : type of the telescope camera
 		tel_description : description of the telescope
-	'''
+	"""
 	tel_id = tables.UInt64Col()
 	pos_x = tables.Float32Col()
 	pos_y = tables.Float32Col()
@@ -36,7 +36,7 @@ class SubarrayLayout(tables.IsDescription):
 
 
 class OpticDescription(tables.IsDescription):
-	'''
+	"""
 	Describe the optic of the all the telescopes
 	Attributes:
 	-----------
@@ -48,7 +48,7 @@ class OpticDescription(tables.IsDescription):
 		equivalent_focal_length : equivalent focal lenght of the mirror in meters
 		camera_rotation : rotation [rad] of the camera
 		pixel_rotation : rotation [rad] of the angel
-	'''
+	"""
 	description = tables.StringCol(14, dflt=b'')
 	name = tables.StringCol(5, dflt=b'')
 	type = tables.StringCol(3, dflt=b'')
@@ -80,14 +80,14 @@ class CameraReadOut(tables.IsDescription):
 
 
 def fill_subarray_layout(hfile, telInfo_from_evt, nbTel):
-	'''
+	"""
 	Fill the subarray informations
 	Parameters:
 	-----------
 		hfile : HDF5 file to be used
 		telInfo_from_evt : information of telescopes
 		nbTel : number of telescope in the run
-	'''
+	"""
 	tableSubarrayLayout = hfile.root.configuration.instrument.subarray.layout
 	tabSubLayout = tableSubarrayLayout.row
 	
@@ -128,13 +128,13 @@ def fill_subarray_layout(hfile, telInfo_from_evt, nbTel):
 
 
 def create_camera_table(hfile, telInfo):
-	'''
+	"""
 	Create a table to describe a camera
 	Parameters:
 	-----------
 		hfile : HDF5 file to be used
 		telInfo : table of some informations related to the telescope
-	'''
+	"""
 	camera_name = get_camera_name_from_type(telInfo[TELINFO_TELTYPE])
 	geometry_camera_name = 'geometry_' + camera_name
 	readout_camera_name = 'readout_' + camera_name
@@ -208,14 +208,14 @@ def create_instrument_dataset(hfile, telInfo_from_evt):
 
 
 def fill_optic_description(hfile, telInfo_from_evt, nbTel):
-	'''
+	"""
 	Fill the optic description table
 	Parameters:
 	-----------
 		hfile : HDF5 file to be used
 		telInfo_from_evt : information of telescopes
 		nbTel : number of telescope in the run
-	'''
+	"""
 	
 	tableOptic = hfile.root.configuration.instrument.telescope.optics
 	tabOp = tableOptic.row

@@ -80,4 +80,3 @@ def get_telescope_type_str_from_camera_type(cam_type):
 		return "SST"
 	else:
 		return "UNKNOWN_telescopeType"
-

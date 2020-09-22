@@ -14,7 +14,7 @@ import tables
 import hipecta.hdf5_utils as hdu
 import hipecta.pixelselection as pixselec
 import hipecta.core as core
-from ctapipe_io_mchdf5.tools import copyAllTelWithoutWaveform, create_event_tel_waveform
+from ctapipe_io_mchdf5.tools import copy_all_tel_without_waveform, create_event_tel_waveform
 
 
 def computeSelectionTailCutDilation(fileOut, telNodeOut, telNodeIn, tabFocalTel, nbGain, center=4, neighbours=2,
@@ -133,7 +133,7 @@ def tailcutDilationSelectionAllTelescopes(fileOut, fileIn, center, neighbours, m
 		dilation : threshold to be used at the dilation step
 	'''
     print("tailcutDilationSelectionAllTelescopes : copy telescope data without waveform")
-    copyAllTelWithoutWaveform(fileOut, fileIn)
+    copy_all_tel_without_waveform(fileOut, fileIn)
 
     tabFocalTel = fileIn.root.instrument.subarray.telescope.optics.col("equivalent_focal_length")
 

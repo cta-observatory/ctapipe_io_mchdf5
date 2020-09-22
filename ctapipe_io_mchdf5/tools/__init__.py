@@ -25,7 +25,7 @@ def copyTelIntrSimuNode(fileOut, fileIn, r1NodeName="r1", docR1Node="Raw data wa
 		docR1Node : documentation of the created node
 		chunkshape : shape of the chunk to be used to store the data of waveform and minimum
 	'''
-	copyAllTelWithoutWaveform(fileOut, fileIn, r1NodeName=r1NodeName, docR1Node=docR1Node, chunkshape=chunkshape)
+	copy_all_tel_without_waveform(fileOut, fileIn, r1NodeName=r1NodeName, docR1Node=docR1Node, chunkshape=chunkshape)
 	#Copy the instrument and simulation groups
 	try:
 		fileOut.copy_node(fileIn.root.instrument, newparent=fileOut.root, recursive=True)
