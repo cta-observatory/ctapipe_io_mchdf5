@@ -248,9 +248,9 @@ def create_tel_group_and_table(hfile, telId, telInfo, chunkshape=1):
 
 	create_mon_tel_pointing(hfile, telId, nb_pixel, telInfo, chunkshape=chunkshape)
 
-	create_mon_tel_pedestal(hfile, telInfo, nb_pixel, nb_gain, telId)
+	create_mon_tel_pedestal(hfile, telInfo, nb_gain, nb_pixel, telId)
 	create_mon_tel_gain(hfile, telInfo, telId)
-	create_mon_tel_info(hfile, telId, telInfo, nb_pixel, nb_gain, nb_slice)
+	create_mon_tel_info(hfile, telId, telInfo, nb_gain, nb_pixel, nb_slice)
 
 	create_event_tel_waveform(hfile, hfile.root.r0.event.telescope.waveform, nb_gain, image_shape, telId,
 							  chunkshape=chunkshape)
