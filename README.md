@@ -2,7 +2,7 @@
 
 ctapipe plugin for reading and converting Monte-Carlo files (contains the same information as Simtel files).
 
-Repository **CURRENTLY** getting update with _ctapipe_0.8 data format.
+Repository **ALIGNED** with the CTA R0 data model.
 
 Installation
 ============
