@@ -27,7 +27,7 @@ entry_points['console_scripts'] = ['mchdf5_simtel2r0 = ctapipe_io_mchdf5.convert
 setup(
 	name='ctapipe_io_mchdf5',
 	packages=find_packages(),
-	version='0.1',
+	version='0.2.1-dev',
 	description='ctapipe plugin for reading Monte-Carlo files (contains the same informations as Simtel files)',
 	long_description=long_description,
 	long_description_content_type='text/markdown',
