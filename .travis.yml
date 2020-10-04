@@ -45,7 +45,7 @@ install:
     - pip install codecov
     - pip install .
 
-script:
+#script:
 #    - pytest --cov=ctapipe_io_mchdf5
     #- travis-sphinx -v --outdir=docbuild build --source=docs/
 
