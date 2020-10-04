@@ -76,7 +76,7 @@ def extractSignalTensorFile(fileName):
 	'''
 	Extract the signal tensor of a whole file
 	'''
-	inFile = tables.open_file(inputFileName, "r")
+	inFile = tables.open_file(fileName, "r")
 	
 	baseOutputFile = fileName.replace(".h5", "")
 	
@@ -91,12 +91,19 @@ def extractSignalTensorFile(fileName):
 
 def main():
 	parser = argparse.ArgumentParser()
-	parser.add_argument('-i', '--input', help="hdf5 r1 v2 output file", required=True)
+	parser.add_argument('-i', '--input', help="hdf5 r1 v2 file", required=True,
+						'-o', '--output', help="output file", required=True,
+						'-fi', '--first_index', help="first slice index", required=True,
+						'-li', '--last_index', help="last slice index", required=True
+						)
 	
 	args = parser.parse_args()
 
 	inputFileName = args.input
+	outputFileName = args.output
+	firstSliceIndex = args.first_index
+	lastSliceIndex = args.last_index
 	
-	processSliceSelectionFile(inputFileName, outputFileName, firstSliceIndex, lastSliceIndex)
+	extractSignalTensorFile(inputFileName, outputFileName, firstSliceIndex, lastSliceIndex)
 
 
