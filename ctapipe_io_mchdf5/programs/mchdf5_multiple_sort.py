@@ -8,7 +8,7 @@ import tables
 import numpy as np
 import argparse
 
-from ctapipe_io_mchdf5.tools.copy_sort import createAllTelescopeSorted
+from ctapipe_io_mchdf5.tools.copy_sort import create_all_telescope_sorted
 
 MODE_RANGE = 0
 MODE_MEAN = 1
@@ -226,12 +226,12 @@ def sortChannel(waveformOut, waveformIn, keyWaveform, nbPixel, tabInjName,
 	waveformOut.flush()
 
 
-def createInjunctionTabTable(hfile, camTelGroup, nameTable, nbPixel, chunkshape=1):
+def createInjunctionTabTable(hfile, cam_tel_group, nameTable, nbPixel, chunkshape=1):
 	'''
 	Create the table to store the signal
 	Parameters:
 		hfile : HDF5 file to be used
-		camTelGroup : telescope group in which to put the tables
+		cam_tel_group : telescope group in which to put the tables
 		nameTable : name of the table to store the injunction tables
 		nbPixel : number of pixels of the camera
 		chunkshape : shape of the chunk to be used to store the data of waveform and minimum
@@ -243,7 +243,7 @@ def createInjunctionTabTable(hfile, camTelGroup, nameTable, nbPixel, chunkshape=
 				"tabinj": tables.UInt16Col(shape=nbPixel)}
 	
 	description_tabInj = type('description columns_dict_tabInj', (tables.IsDescription,), columns_dict_tabInj)
-	return hfile.create_table(camTelGroup, nameTable, description_tabInj, "Injunction tables of the signal", chunkshape=chunkshape)
+	return hfile.create_table(cam_tel_group, nameTable, description_tabInj, "Injunction tables of the signal", chunkshape=chunkshape)
 
 
 def copySortedTelescope(outFile, telNodeOut, telNodeIn, isStoreSlicePixel, selectionMode, nbEventPerInjTab):
@@ -317,7 +317,7 @@ def sortPixelFile(inputFileName, outputFileName, isStoreSlicePixel, selectionMod
 		outFile.copy_node(inFile.root.simulation, newparent=outFile.root, recursive=True)
 	except:
 		pass
-	createAllTelescopeSorted(outFile, inFile, isStoreSlicePixel)
+	create_all_telescope_sorted(outFile, inFile, isStoreSlicePixel)
 	copySortedR1(outFile, inFile, isStoreSlicePixel, selectionMode, nbEventPerInjTab)
 	inFile.close()
 	outFile.close()

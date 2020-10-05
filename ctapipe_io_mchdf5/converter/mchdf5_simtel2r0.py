@@ -1,39 +1,27 @@
 
 # coding: utf-8
 
-'''
+"""
 	Auteur : Pierre Aubert
 	Mail : aubertp7@gmail.com
 	Licence : CeCILL-C
-'''
+"""
 
 import tables
 from ctapipe.io import event_source
 import argparse
 
 from ..tools.get_nb_tel import getNbTel
-from ..tools.r1_file import *
-from ..tools.r1_utils import *
-from ..tools.get_telescope_info import *
-from ..tools.simulation_utils import *
-from ..tools.instrument_utils import *
-
-
-def createFileStructure(hfile, telInfo_from_evt):
-	'''
-	Create the structure of the HDF5 file
-	Parameters:
-	-----------
-		hfile : HDF5 file to be used
-		telInfo_from_evt : information of telescopes
-	Return:
-	-------
-		table of mc_event
-	'''
-	createR1Dataset(hfile, telInfo_from_evt)
-	createInstrumentDataset(hfile, telInfo_from_evt)
-	tableMcEvent = createSimiulationDataset(hfile)
-	return tableMcEvent
+from ..tools.r0_file import (create_file_structure,
+							 open_output_file)
+from ..tools.r0_utils import (append_event_telescope_data,
+							  flush_r0_tables)
+from ..tools.get_telescope_info import (get_telescope_info_from_event,
+										check_is_simulation_file)
+from ..tools.simulation_utils import (append_corsika_event,
+									  fill_simulation_header_info)
+from ..tools.instrument_utils import (fill_subarray_layout,
+									  fill_optic_description)
 
 
 def main():
@@ -52,31 +40,31 @@ def main():
 	inputFileName = args.input
 	nbTel = getNbTel(inputFileName)
 	print("Number of telescope : ", nbTel)
-	
-	#Increase the number of nodes in cache if necessary (avoid warning about nodes reopening)
+
+	# Increase the number of nodes in cache if necessary (avoid warning about nodes reopening)
 	tables.parameters.NODE_CACHE_SLOTS = max(tables.parameters.NODE_CACHE_SLOTS, 3*nbTel + 20)
-	
-	telInfo_from_evt, nbEvent = getTelescopeInfoFromEvent(inputFileName, nbTel)
+
+	telInfo_from_evt, nbEvent = get_telescope_info_from_event(inputFileName, nbTel)
 	print("Found", nbEvent, "events")
-	hfile = openOutputFile(args.output, compressionLevel=args.compression)
-	
+	hfile = open_output_file(args.output, compressionLevel=args.compression)
+
 	print('Create file structure')
-	tableMcCorsikaEvent = createFileStructure(hfile, telInfo_from_evt)
-	
+	tableMcCorsikaEvent = create_file_structure(hfile, telInfo_from_evt)
+
 	print('Fill the subarray layout information')
-	fillSubarrayLayout(hfile, telInfo_from_evt, nbTel)
-	
-	isSimulationMode = checkIsSimulationFile(telInfo_from_evt)
-	
+	fill_subarray_layout(hfile, telInfo_from_evt, nbTel)
+
+	isSimulationMode = check_is_simulation_file(telInfo_from_evt)
+
 	if isSimulationMode:
 		print('Fill the optic description of the telescopes')
-		fillOpticDescription(hfile, telInfo_from_evt, nbTel)
-		
+		fill_optic_description(hfile, telInfo_from_evt, nbTel)
+
 		print('Fill the simulation header information')
-		fillSimulationHeaderInfo(hfile, inputFileName)
-	
+		fill_simulation_header_info(hfile, inputFileName)
+
 	source = event_source(inputFileName)
-	
+
 	nb_event = 0
 	max_event = 10000000
 	if args.max_event != None:
@@ -86,8 +74,8 @@ def main():
 	print("\n")
 	for event in source:
 		if isSimulationMode:
-			appendCorsikaEvent(tableMcCorsikaEvent, event)
-		appendEventTelescopeData(hfile, event)
+			append_corsika_event(tableMcCorsikaEvent, event)
+		append_event_telescope_data(hfile, event)
 		nb_event += 1
 		print("\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r{} / {}".format(nb_event, max_event), end="")
 		if nb_event >= max_event:
@@ -95,8 +83,8 @@ def main():
 	print("\nFlushing tables")
 	if isSimulationMode:
 		tableMcCorsikaEvent.flush()
-		
-	flushR1Tables(hfile)
+
+	flush_r0_tables(hfile)
 	hfile.close()
 	print('\nDone')
 
