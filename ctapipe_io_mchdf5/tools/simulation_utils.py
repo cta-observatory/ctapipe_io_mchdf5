@@ -238,8 +238,8 @@ def append_corsika_event(tableMcCorsikaEvent, event):
     """
     tabMcEvent = tableMcCorsikaEvent.row
     tabMcEvent['event_id'] = np.uint64(event.index.event_id)
-    tabMcEvent['true_az'] = np.float32(np.rad2deg(event.mc.az))
-    tabMcEvent['true_alt'] = np.float32(np.rad2deg(event.mc.alt))
+    tabMcEvent['true_az'] = np.float32(event.mc.az)
+    tabMcEvent['true_alt'] = np.float32(event.mc.alt)
 
     tabMcEvent['true_core_x'] = np.float32(event.mc.core_x)
     tabMcEvent['true_core_y'] = np.float32(event.mc.core_y)
