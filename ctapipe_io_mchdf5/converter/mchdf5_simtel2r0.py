@@ -28,13 +28,16 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-i', '--input', help="simtel input file",
 						required=True)
-	parser.add_argument('-o', '--output', help="hdf5 r1 output file",
+	parser.add_argument('-o', '--output', help="hdf5 r0 output file",
 						required=True)
 	parser.add_argument('-m', '--max_event', help="maximum event to reconstruct",
 						required=False, type=int)
 	parser.add_argument('-c', '--compression',
 						help="compression level for the output file [0 (No compression), 1 - 9]. Default = 6",
 						required=False, type=int, default='6')
+	parser.add_argument('-z', '--zfits',
+						help="To be used for a zfits convertion to HDF5",
+						required=False, type=bool, default=False)
 	args = parser.parse_args()
 
 	inputFileName = args.input
@@ -53,8 +56,11 @@ def main():
 
 	print('Fill the subarray layout information')
 	fill_subarray_layout(hfile, telInfo_from_evt, nbTel)
-
-	isSimulationMode = check_is_simulation_file(telInfo_from_evt)
+	
+	isSimulationMode = not args.zfits
+	print("Is simulation mode :",isSimulationMode)
+	
+	check_is_simulation_file(telInfo_from_evt)
 
 	if isSimulationMode:
 		print('Fill the optic description of the telescopes')
