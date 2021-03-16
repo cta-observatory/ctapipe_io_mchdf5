@@ -91,11 +91,10 @@ def extractSignalTensorFile(fileName):
 
 def main():
 	parser = argparse.ArgumentParser()
-	parser.add_argument('-i', '--input', help="hdf5 r1 v2 file", required=True,
-						'-o', '--output', help="output file", required=True,
-						'-fi', '--first_index', help="first slice index", required=True,
-						'-li', '--last_index', help="last slice index", required=True
-						)
+	parser.add_argument('-i', '--input', help="hdf5 r1 v2 file", required=True)
+	parser.add_argument('-o', '--output', help="output file", required=True)
+	parser.add_argument('-f', '--first_index', help="first slice index", required=True)
+	parser.add_argument('-l', '--last_index', help="last slice index", required=True)
 	
 	args = parser.parse_args()
 
