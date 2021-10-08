@@ -8,7 +8,7 @@
 """
 
 import tables
-from ctapipe.io import event_source
+from ctapipe.io.eventsource import EventSource
 import argparse
 
 from ..tools.get_nb_tel import getNbTel
@@ -69,7 +69,7 @@ def main():
 		print('Fill the simulation header information')
 		fill_simulation_header_info(hfile, inputFileName)
 
-	source = event_source(inputFileName)
+	source = EventSource(input_url=inputFileName)
 
 	nb_event = 0
 	max_event = 10000000
