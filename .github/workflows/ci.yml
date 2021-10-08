@@ -5,7 +5,7 @@ on: [push, pull_request]
 
 jobs:
   tests:
-    runs-on: continuumio/miniconda:4.7.12-alpine
+    runs-on: continuumio/miniconda3:4.10.3-alpine
     
     steps:
       - uses: actions/checkout@v2
