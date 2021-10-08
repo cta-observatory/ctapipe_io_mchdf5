@@ -1,0 +1,29 @@
+name: CI
+
+on: [push, pull_request]
+
+
+jobs:
+  tests:
+    runs-on: continuumio/miniconda:4.7.12-alpine
+    
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          
+      - name: env update
+        run: conda env update -f py3.7_env.yaml -n base
+
+      - name: Install
+        run: |
+          python --version
+          pip install codecov pytest-cov pyflakes pytest-xdist
+          pip install .
+
+      - name: Tests
+        # need to use a login shell for the conda setup to work
+        shell: bash -leo pipefail {0}
+        run: |
+          pytest -n auto --dist loadscope --cov --cov-report=xml 
+      - uses: codecov/codecov-action@v1
