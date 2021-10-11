@@ -73,16 +73,16 @@ def test_compare_with_simtel():
 		assert(hipe_event.r0.tel[tel_id].waveform.sum() ==
 			   sim_event.r0.tel[tel_id].waveform.sum())
 
-	for tel_id in sim_event.mc.tel.keys():
+	for tel_id in sim_event.simulation.tel.keys():
 		# Could not compare pixel by pixel because pixel order differ
-		for gain in range(len(sim_event.mc.tel[tel_id].dc_to_pe)):
-			assert (np.isclose(sim_event.mc.tel[tel_id].dc_to_pe[gain].sum(),
-							   hipe_event.mc.tel[tel_id].dc_to_pe[gain].sum()))
-			assert (np.isclose(sim_event.mc.tel[tel_id].pedestal[gain].sum(),
-							   hipe_event.mc.tel[tel_id].pedestal[gain].sum()))
-			assert (np.isclose(sim_event.mc.tel[tel_id].
+		for gain in range(len(sim_event.simulation.tel[tel_id].dc_to_pe)):
+			assert (np.isclose(sim_event.simulation.tel[tel_id].dc_to_pe[gain].sum(),
+							   hipe_event.simulation.tel[tel_id].dc_to_pe[gain].sum()))
+			assert (np.isclose(sim_event.simulation.tel[tel_id].pedestal[gain].sum(),
+							   hipe_event.simulation.tel[tel_id].pedestal[gain].sum()))
+			assert (np.isclose(sim_event.simulation.tel[tel_id].
 							   reference_pulse_shape[gain].sum(),
-							   hipe_event.mc.tel[tel_id].
+							   hipe_event.simulation.tel[tel_id].
 							   reference_pulse_shape[gain].sum()))
 
 

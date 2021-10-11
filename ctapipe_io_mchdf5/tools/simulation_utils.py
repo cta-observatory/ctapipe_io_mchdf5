@@ -7,7 +7,7 @@
 import tables
 import numpy as np
 
-from ctapipe.io import event_source
+from ctapipe.io.eventsource import EventSource
 
 
 class RunConfigEvent(tables.IsDescription):
@@ -182,13 +182,13 @@ def fill_simulation_header_info(hfile, inputFileName):
         hfile : HDF5 file to be used
         inputFileName : name of the input file to be used
     """
-    with event_source(inputFileName) as source:
+    with EventSource(input_url=inputFileName) as source:
         evt = next(iter(source))
 
         tableSimulationConfig = hfile.root.configuration.simulation.run
         tabSimConf = tableSimulationConfig.row
 
-        mcHeader = evt.mcheader
+        mcHeader = evtheader
         tabSimConf["atmosphere"] = np.uint64(mcHeader.atmosphere)
         tabSimConf["core_pos_mode"] = np.uint64(mcHeader.core_pos_mode)
         tabSimConf["corsika_bunchsize"] = np.float32(mcHeader.corsika_bunchsize)
@@ -238,17 +238,17 @@ def append_corsika_event(tableMcCorsikaEvent, event):
     """
     tabMcEvent = tableMcCorsikaEvent.row
     tabMcEvent['event_id'] = np.uint64(event.index.event_id)
-    tabMcEvent['true_az'] = np.float32(event.mc.az)
-    tabMcEvent['true_alt'] = np.float32(event.mc.alt)
+    tabMcEvent['true_az'] = np.float32(event.simulation.az)
+    tabMcEvent['true_alt'] = np.float32(event.simulation.alt)
 
-    tabMcEvent['true_core_x'] = np.float32(event.mc.core_x)
-    tabMcEvent['true_core_y'] = np.float32(event.mc.core_y)
+    tabMcEvent['true_core_x'] = np.float32(event.simulation.core_x)
+    tabMcEvent['true_core_y'] = np.float32(event.simulation.core_y)
 
-    tabMcEvent['true_energy'] = np.float32(event.mc.energy)
-    tabMcEvent['true_h_first_int'] = np.float32(event.mc.h_first_int)
-    tabMcEvent['true_shower_primary_id'] = np.uint8(event.mc.shower_primary_id)
+    tabMcEvent['true_energy'] = np.float32(event.simulation.energy)
+    tabMcEvent['true_h_first_int'] = np.float32(event.simulation.h_first_int)
+    tabMcEvent['true_shower_primary_id'] = np.uint8(event.simulation.shower_primary_id)
 
-    tabMcEvent['true_x_max'] = np.float32(event.mc.x_max)
+    tabMcEvent['true_x_max'] = np.float32(event.simulation.x_max)
 
     tabMcEvent['obs_id'] = np.uint64(event.index.obs_id)
 

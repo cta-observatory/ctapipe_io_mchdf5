@@ -11,11 +11,13 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-          
+
       - name: env update
+        shell: bash -leo pipefail {0}
         run: conda env update -f py3.7_env.yaml -n base
 
       - name: Install
+        shell: bash -leo pipefail {0}
         run: |
           python --version
           pip install codecov pytest-cov pyflakes pytest-xdist

@@ -392,7 +392,7 @@ def append_event_telescope_data(hfile, event):
 		waveform = dicoTel[telId].waveform
 		tel_waveform_table = hfile.get_node("/r0/event/telescope/waveform", 'tel_{0:0=3d}'.format(telId))
 		tel_pe_image_table = hfile.get_node('/r0/event/telescope/photo_electron_image', 'tel_{0:0=3d}'.format(telId))
-		photo_electron_image = event.mc.tel[telId].true_image
+		photo_electron_image = event.simulation.tel[telId].true_image
 
 		append_waveform_in_telescope(tel_waveform_table, waveform, event.index.event_id)
 		append_photo_electron_image_in_telescope(tel_pe_image_table, photo_electron_image, event.index.event_id)
