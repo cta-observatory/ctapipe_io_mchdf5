@@ -367,13 +367,14 @@ def append_waveform_in_telescope(tel_wf_table, waveform, eventId):
 	tel_wf_table_row.append()
 
 
-def append_event_telescope_data(hfile, event):
+def append_event_telescope_data(hfile, event, isSimulationMode):
 	"""
 	Append data from event in telescopes
 	--------------
 	Parameters :
 		hfile : HDF5 file to be used
 		event : current event
+		isSimulationMode : true on simulation mode
 	"""
 	tab_tel_with_data = list(event.r0.tels_with_data)
 	event_subarray_tel_w_trigger_row = hfile.root.r0.event.subarray.tels_with_trigger
@@ -381,7 +382,14 @@ def append_event_telescope_data(hfile, event):
 
 	event_subarray_trigger_row = hfile.root.r0.event.subarray.trigger.row
 	event_subarray_trigger_row['event_id'] = event.index.event_id
-	event_subarray_trigger_row['time'] = np.float64(event.trigger.time.to_value('unix'))
+	#event.r0.tel[1].trigger_time
+	
+	if isSimulationMode:
+		event_subarray_trigger_row['time'] = np.float64(event.trigger.time.to_value('unix'))
+	else:
+		#Das ist a grosse bidouille for real data
+		event_subarray_trigger_row['time'] = np.float64(event.r0.tel[tab_tel_with_data[0]].trigger_time.to_value('unix'))
+		
 	event_subarray_trigger_row['event_type'] = event.trigger.event_type.value
 	event_subarray_trigger_row['obs_id'] = event.index.obs_id
 

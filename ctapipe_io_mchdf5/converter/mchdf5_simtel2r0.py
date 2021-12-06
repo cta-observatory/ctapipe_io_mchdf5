@@ -81,7 +81,7 @@ def main():
 	for event in source:
 		if isSimulationMode:
 			append_corsika_event(tableMcCorsikaEvent, event)
-		append_event_telescope_data(hfile, event)
+		append_event_telescope_data(hfile, event, isSimulationMode)
 		nb_event += 1
 		print("\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r{} / {}".format(nb_event, max_event), end="")
 		if nb_event >= max_event:
