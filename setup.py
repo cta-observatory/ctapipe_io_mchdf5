@@ -35,7 +35,7 @@ setup(
 	install_requires=[
 		'numpy>=1.14.0', 
 		'tables>=3.4.4',
-		'ctapipe',
+		'ctapipe>=0.10',
 		'pytest-cov'
 	],
 	setup_requires=['pytest_runner'],

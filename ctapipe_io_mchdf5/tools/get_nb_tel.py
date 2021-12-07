@@ -4,7 +4,7 @@
 	Licence : CeCILL-C
 """
 
-from ctapipe.io import event_source
+from ctapipe.io.eventsource import EventSource
 
 
 def getNbTel(inputFileName):
@@ -16,6 +16,6 @@ def getNbTel(inputFileName):
 	Return:
 		number of telescopes in the simulation file
 	"""
-	with event_source(inputFileName) as source:
+	with EventSource(input_url=inputFileName) as source:
 		nbTel = source.subarray.num_tels
 		return nbTel

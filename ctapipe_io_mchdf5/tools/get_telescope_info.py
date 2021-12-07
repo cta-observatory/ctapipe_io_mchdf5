@@ -7,7 +7,7 @@
 import numpy as np
 
 try:
-	from ctapipe.io import event_source
+	from ctapipe.io.eventsource import EventSource
 except:
 	pass
 
@@ -59,7 +59,7 @@ def get_telescope_info_from_event(inputFileName, max_nb_tel):
 	"""
 	telescope_info = dict()  # Key is tel id, value (ref_shape, slice, ped, gain, telType, focalLen, tabPixelX, tabPixelY, nbMirror)
 	nbEvent = 0
-	with event_source(inputFileName) as source:
+	with EventSource(input_url=inputFileName) as source:
 		dicoTelInfo = None
 		posTelX = None
 		posTelY = None
@@ -71,14 +71,14 @@ def get_telescope_info_from_event(inputFileName, max_nb_tel):
 				posTelX = np.asarray(source.subarray.tel_coords.x, dtype=np.float32)
 				posTelY = np.asarray(source.subarray.tel_coords.y, dtype=np.float32)
 				posTelZ = np.asarray(source.subarray.tel_coords.z, dtype=np.float32)
-			for tel_id in evt.r0.tels_with_data:
+			for tel_id in evt.r0.tel:
 				if not tel_id in telescope_info:
 					ref_shape = source.subarray.tel[tel_id].camera.readout.reference_pulse_shape
 					nb_slice = evt.r0.tel[tel_id].waveform.shape[2]
 					nbGain = evt.r0.tel[tel_id].waveform.shape[0]
 					nbPixel = evt.r0.tel[tel_id].waveform.shape[1]
-					ped = evt.mc.tel[tel_id].pedestal
-					gain = evt.mc.tel[tel_id].dc_to_pe
+					ped = evt.tel[tel_id].pedestal
+					gain = evt.tel[tel_id].dc_to_pe
 					cameraRotation = source.subarray.tel[tel_id].camera.geometry.pix_rotation.value
 					pixRotation = source.subarray.tel[tel_id].camera.geometry.cam_rotation.value
 					

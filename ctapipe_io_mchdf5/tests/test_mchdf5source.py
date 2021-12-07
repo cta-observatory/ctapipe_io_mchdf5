@@ -31,77 +31,77 @@ FIRST_EVENT_NUMBER_IN_TEL = [153614, 31012, 31012, 31012, 23703, 31012, 46705, 3
 394309, 904404, 1221503, 31012, 135101, 880603, 394309, 1439710, 31019, 880611]
 
 
-# def test_compare_with_simtel():
-# 	from ctapipe.io import event_source
-# 	hipefile = example_file_path
-# 	simfile = get_dataset_path('gamma_test_large.simtel.gz')
-# 	event_id = 880610
-# 	sim_source = event_source(simfile)
-# 	hipe_source = event_source(hipefile)
-#
-# 	for sim_event in sim_source:
-# 		if sim_event.r0.event_id == event_id:
-# 			break
-#
-# 	for hipe_event in hipe_source:
-# 		if hipe_event.r0.event_id == event_id :
-# 			break
-#
-# 	assert(hipe_event.meta['origin'] == "hipehdf5")
-# 	assert(hipe_event.meta['input_url'] == hipefile)
-# 	assert(hipe_event.meta['max_events'] == None)
-#
-# 	assert(hipe_event.inst.subarray.name == sim_event.inst.subarray.name)
-# 	#assert(len(hipe_event.inst.subarray.tels) == len(sim_event.inst.subarray.tels))
-#
-# 	assert (hipe_event.r0.event_id == sim_event.r0.event_id)
-# 	assert (hipe_event.r0.tels_with_data == sim_event.r0.tels_with_data)
-# 	#assert (hipe_event.r0.obs_id == sim_event.r0.obs_id)
-#
-# 	assert (hipe_event.r1.event_id == sim_event.r1.event_id)
-# 	assert (hipe_event.r1.tels_with_data == sim_event.r1.tels_with_data)
-# 	#assert (hipe_event.r1.obs_id == sim_event.r1.obs_id)
-#
-# 	assert (hipe_event.dl0.tels_with_data == sim_event.dl0.tels_with_data)
-# 	assert (hipe_event.dl0.event_id == sim_event.dl0.event_id)
-# 	#assert(hipe_event.dl0.obs_id == sim_event.dl0.obs_id)
-#
-# 	assert(hipe_event.trig.tels_with_trigger.all() ==
-# 		   sim_event.trig.tels_with_trigger.all())
-#
-# 	for tel_id in  sim_event.r0.tels_with_data:
-# 		assert(hipe_event.r0.tel[tel_id].waveform.sum() ==
-# 			   sim_event.r0.tel[tel_id].waveform.sum())
-#
-# 	for tel_id in sim_event.mc.tel.keys():
-# 		# Could not compare pixel by pixel because pixel order differ
-# 		for gain in range(len(sim_event.mc.tel[tel_id].dc_to_pe)):
-# 			assert (np.isclose(sim_event.mc.tel[tel_id].dc_to_pe[gain].sum(),
-# 							   hipe_event.mc.tel[tel_id].dc_to_pe[gain].sum()))
-# 			assert (np.isclose(sim_event.mc.tel[tel_id].pedestal[gain].sum(),
-# 							   hipe_event.mc.tel[tel_id].pedestal[gain].sum()))
-# 			assert (np.isclose(sim_event.mc.tel[tel_id].
-# 							   reference_pulse_shape[gain].sum(),
-# 							   hipe_event.mc.tel[tel_id].
-# 							   reference_pulse_shape[gain].sum()))
+def test_compare_with_simtel():
+	from ctapipe.io.eventsource import EventSource
+	hipefile = example_file_path
+	simfile = get_dataset_path('gamma_test_large.simtel.gz')
+	event_id = 880610
+	sim_source = EventSource(input_url=simfile)
+	hipe_source = EventSource(input_url=hipefile)
+
+	for sim_event in sim_source:
+		if sim_event.r0.event_id == event_id:
+			break
+
+	for hipe_event in hipe_source:
+		if hipe_event.r0.event_id == event_id :
+			break
+
+	assert(hipe_event.meta['origin'] == "hipehdf5")
+	assert(hipe_event.meta['input_url'] == hipefile)
+	assert(hipe_event.meta['max_events'] == None)
+
+	assert(hipe_event.inst.subarray.name == sim_event.inst.subarray.name)
+	#assert(len(hipe_event.inst.subarray.tels) == len(sim_event.inst.subarray.tels))
+
+	assert (hipe_event.r0.event_id == sim_event.r0.event_id)
+	assert (hipe_event.r0.tels_with_data == sim_event.r0.tels_with_data)
+	#assert (hipe_event.r0.obs_id == sim_event.r0.obs_id)
+
+	assert (hipe_event.r1.event_id == sim_event.r1.event_id)
+	assert (hipe_event.r1.tels_with_data == sim_event.r1.tels_with_data)
+	#assert (hipe_event.r1.obs_id == sim_event.r1.obs_id)
+
+	assert (hipe_event.dl0.tels_with_data == sim_event.dl0.tels_with_data)
+	assert (hipe_event.dl0.event_id == sim_event.dl0.event_id)
+	#assert(hipe_event.dl0.obs_id == sim_event.dl0.obs_id)
+
+	assert(hipe_event.trig.tels_with_trigger.all() ==
+		   sim_event.trig.tels_with_trigger.all())
+
+	for tel_id in  sim_event.r0.tels_with_data:
+		assert(hipe_event.r0.tel[tel_id].waveform.sum() ==
+			   sim_event.r0.tel[tel_id].waveform.sum())
+
+	for tel_id in sim_event.simulation.tel.keys():
+		# Could not compare pixel by pixel because pixel order differ
+		for gain in range(len(sim_event.simulation.tel[tel_id].dc_to_pe)):
+			assert (np.isclose(sim_event.simulation.tel[tel_id].dc_to_pe[gain].sum(),
+							   hipe_event.simulation.tel[tel_id].dc_to_pe[gain].sum()))
+			assert (np.isclose(sim_event.simulation.tel[tel_id].pedestal[gain].sum(),
+							   hipe_event.simulation.tel[tel_id].pedestal[gain].sum()))
+			assert (np.isclose(sim_event.simulation.tel[tel_id].
+							   reference_pulse_shape[gain].sum(),
+							   hipe_event.simulation.tel[tel_id].
+							   reference_pulse_shape[gain].sum()))
 
 
-# def test_loop_over_telescopes():
-# 	from ctapipe_io_mchdf5 import MCHDF5EventSource
-#
-# 	n_events = 10
-# 	inputfile_reader = MCHDF5EventSource(input_url=example_file_path)
-# 	i = 0
-# 	for tel in inputfile_reader.run.walk_nodes('/Tel', 'Group'):
-# 		try:
-# 			tabEventId = tel.eventId.read()
-# 			tabEventId = tabEventId["eventId"]
-# 			assert (tabEventId[0] == FIRST_EVENT_NUMBER_IN_TEL[i])
-# 			i += 1
-# 		except tables.exceptions.NoSuchNodeError as e:
-# 			pass
+def test_loop_over_telescopes():
+	from ctapipe_io_mchdf5 import MCHDF5EventSource
+
+	n_events = 10
+	inputfile_reader = MCHDF5EventSource(input_url=example_file_path)
+	i = 0
+	for tel in inputfile_reader.run.walk_nodes('/Tel', 'Group'):
+		try:
+			tabEventId = tel.eventId.read()
+			tabEventId = tabEventId["eventId"]
+			assert (tabEventId[0] == FIRST_EVENT_NUMBER_IN_TEL[i])
+			i += 1
+		except tables.exceptions.NoSuchNodeError as e:
+			pass
 
 
-# def test_is_compatible():
-# 	from ctapipe_io_mchdf5 import MCHDF5EventSource
-# 	assert MCHDF5EventSource.is_compatible(example_file_path)
+def test_is_compatible():
+	from ctapipe_io_mchdf5 import MCHDF5EventSource
+	assert MCHDF5EventSource.is_compatible(example_file_path)

@@ -7,15 +7,17 @@
 from ctapipe.io.eventsource import EventSource
 from ctapipe.io.containers import DataContainer
 from numpy import stack, zeros, swapaxes, array, int16, uint64
-from ctapipe.instrument import TelescopeDescription, SubarrayDescription, \
-    OpticsDescription
+from ctapipe.instrument import TelescopeDescription, SubarrayDescription, OpticsDescription
 from ctapipe.instrument.camera import CameraGeometry
 from astropy import units as u
 from astropy.coordinates import Angle
 import numpy as np
 import tables
 
-__all__ = ['MCHDF5EventSource']
+__all__ = [
+    'MCHDF5EventSource',
+]
+
 HI_GAIN = 0
 LO_GAIN = 1
 
