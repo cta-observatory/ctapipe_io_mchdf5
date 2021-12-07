@@ -388,7 +388,7 @@ def append_event_telescope_data(hfile, event, isSimulationMode):
 		event_subarray_trigger_row['time'] = np.float64(event.trigger.time.to_value('unix'))
 	else:
 		#Das ist a grosse bidouille for real data
-		event_subarray_trigger_row['time'] = np.float64(event.r0.tel[tab_tel_with_data[0]].trigger_time)
+		event_subarray_trigger_row['time'] = np.float64(event.r0.tel[tab_tel_with_data[0]].trigger_time) - 37.0
 		
 	event_subarray_trigger_row['event_type'] = event.trigger.event_type.value
 	event_subarray_trigger_row['obs_id'] = event.index.obs_id
